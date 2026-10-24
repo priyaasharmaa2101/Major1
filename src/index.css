@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+::selection {
+  background-color: #10b981; /* Emerald-500 */
+  color: #09090b;            /* Zinc-950 Dark Text for contrast */
+}
+
+::-moz-selection {
+  background-color: #10b981;
+  color: #09090b;
+}
