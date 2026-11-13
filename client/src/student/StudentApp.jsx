@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, Award, Calendar, AlertCircle, Ticket, CheckCircle2, 
-  Clock, Bell, ShieldCheck, Sparkles, LayoutDashboard, ChevronRight,
-  Sun, Moon
+  Clock, Bell, ShieldCheck, Sparkles, LayoutDashboard,
+  Sun, Moon, Menu, X, ArrowRight, CheckCheck, Briefcase
 } from 'lucide-react';
 
 import OverviewTab from './components/OverviewTab';
@@ -18,27 +18,79 @@ export default function StudentApp() {
   const [activeTab, setActiveTab] = useState('overview');
   const [toastMessage, setToastMessage] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Notifications & Profile Modal States
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isFullNotifOpen, setIsFullNotifOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const notifRef = useRef(null);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setIsNotifOpen(false);
+      }
+    }
+    if (isNotifOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isNotifOpen]);
+
+  // Close modals on Escape key
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setIsProfileModalOpen(false);
+        setIsFullNotifOpen(false);
+        setIsNotifOpen(false);
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // ---- All data now comes from the shared store (the admin panel controls it) ----
+  // ---- Shared Store Data + Authenticated Sign-Up User Override ----
   const db = useDB();
   const now = useAutomationLoop();
-  const roll = CURRENT_STUDENT_ROLL;
 
-  const studentProfile = select.student(db, roll);
+  const authUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('campusUser'));
+    } catch {
+      return null;
+    }
+  })();
+
+  const storeStudent = select.student(db, CURRENT_STUDENT_ROLL);
+
+  const studentProfile = {
+    ...storeStudent,
+    name: authUser?.name || storeStudent?.name || 'Student User',
+    rollNo: authUser?.rollNo || storeStudent?.rollNo || CURRENT_STUDENT_ROLL,
+    email: authUser?.email || 'student@college.edu',
+    branch: authUser?.branch || storeStudent?.branch || 'Computer Science & Engineering',
+    semester: authUser?.semester || storeStudent?.semester || '7th Sem',
+    cgpa: storeStudent?.cgpa ?? 8.5,
+  };
+
   const committees = select.openCommittees(db);
   const committeeNames = select.committeeNames(db);
-  const appliedCommittees = select.studentApplications(db, roll);
-  const super50 = select.super50(db, roll);
+  const appliedCommittees = select.studentApplications(db, CURRENT_STUDENT_ROLL);
+  const super50 = select.super50(db, CURRENT_STUDENT_ROLL);
   const events = select.events(db);
-  const myPasses = select.passesFor(db, roll);
-  const grievances = select.grievancesFor(db, roll, now);
-  const myNotifications = select.notificationsFor(db, roll);
+  const myPasses = select.passesFor(db, CURRENT_STUDENT_ROLL);
+  const grievances = select.grievancesFor(db, CURRENT_STUDENT_ROLL, now);
+  const myNotifications = select.notificationsFor(db, CURRENT_STUDENT_ROLL);
   const unreadCount = myNotifications.filter((n) => !n.read).length;
 
   // Modals
@@ -54,13 +106,12 @@ export default function StudentApp() {
 
   const freeSlots = select.freeSlotsFor(db, slotTargetId);
 
-  // Navigation Items
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'committees', label: 'Committees & Hiring', icon: Users, badge: `${committees.length} Open` },
-    { id: 'super50', label: 'Super 50 Cohort', icon: Award, badge: super50.myRank ? `Rank #${super50.myRank}` : undefined },
-    { id: 'events', label: 'Garba & Fiesta Passes', icon: Ticket, badge: 'Live' },
-    { id: 'grievance', label: 'Grievance Desk (SLA)', icon: AlertCircle, badge: `${grievances.filter((g) => g.status !== 'Resolved').length} Active` }
+    { id: 'committees', label: 'Committees & Hiring', icon: Users },
+    { id: 'super50', label: 'Super 50 Cohort', icon: Award },
+    { id: 'events', label: 'Garba & Fiesta Passes', icon: Ticket },
+    { id: 'grievance', label: 'Grievance Desk (SLA)', icon: AlertCircle }
   ];
 
   // Handlers
@@ -70,13 +121,12 @@ export default function StudentApp() {
   };
 
   const submitApplication = () => {
-    const res = actions.applyToCommittee(selectedCommittee.id, roll);
+    const res = actions.applyToCommittee(selectedCommittee.id, CURRENT_STUDENT_ROLL);
     setIsApplyModalOpen(false);
     if (!res.ok) {
       showToast(res.error);
       return;
     }
-    // Automation has already run inside the store, read the fresh result
     const app = getDB().applications.find((a) => a.id === res.id);
     if (app.status === 'Rejected') {
       showToast(`Auto-Screening Failed: ${app.remark}.`);
@@ -110,7 +160,7 @@ export default function StudentApp() {
   };
 
   const processPayment = () => {
-    const res = actions.submitPayment(selectedEventForBooking.id, roll);
+    const res = actions.submitPayment(selectedEventForBooking.id, CURRENT_STUDENT_ROLL);
     setIsPaymentModalOpen(false);
     if (!res.ok) {
       showToast(res.error);
@@ -129,7 +179,7 @@ export default function StudentApp() {
     e.preventDefault();
     if (!grievanceForm.title) return;
     const res = actions.raiseGrievance({
-      rollNo: roll,
+      rollNo: CURRENT_STUDENT_ROLL,
       committee: selectedCommitteeForGrievance,
       title: grievanceForm.title,
       description: grievanceForm.description,
@@ -139,9 +189,21 @@ export default function StudentApp() {
     showToast(`Complaint filed with ${selectedCommitteeForGrievance}. ${res.slaHours}-hour SLA escalation clock started!`);
   };
 
+  const initials = studentProfile.name
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const mySuper50Row = super50.rows.find((r) => r.rollNo === CURRENT_STUDENT_ROLL);
+
   return (
     <div className={`flex min-h-screen font-sans transition-colors duration-200 ${
-      isDarkMode ? 'bg-zinc-950 text-zinc-100 selection:bg-emerald-400 selection:text-zinc-950' : 'bg-slate-50 text-slate-900 selection:bg-emerald-400 selection:text-zinc-950'
+      isDarkMode 
+        ? 'bg-zinc-950 text-zinc-100 selection:bg-emerald-400 selection:text-zinc-950' 
+        : 'bg-slate-50 text-slate-900 selection:bg-emerald-600 selection:text-white'
     }`}>
       {/* Toast Notification */}
       {toastMessage && (
@@ -156,43 +218,49 @@ export default function StudentApp() {
       )}
 
       {/* --- LEFT SIDEBAR NAVBAR --- */}
-      <aside className={`w-64 flex flex-col justify-between shrink-0 sticky top-0 h-screen hidden md:flex border-r transition-colors ${
+      <aside className={`border-r transition-all duration-300 ease-in-out shrink-0 sticky top-0 h-screen flex flex-col justify-between hidden md:flex ${
+        isSidebarOpen ? 'w-64' : 'w-20'
+      } ${
         isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'
       }`}>
         <div>
-          {/* Logo & Brand */}
-          <div className={`p-6 border-b flex items-center gap-3 ${
+          {/* YouTube-style Hamburger Menu + CampusNexus Logo */}
+          <div className={`h-16 px-4 border-b flex items-center gap-3 overflow-hidden ${
             isDarkMode ? 'border-zinc-800' : 'border-slate-100'
           }`}>
-            <div className={`p-2.5 rounded-xl font-black text-sm shadow-sm flex items-center justify-center ${
-              isDarkMode ? 'bg-emerald-500 text-zinc-950 shadow-emerald-500/20' : 'bg-emerald-600 text-white'
-            }`}>
-              <span>⚡</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className={`font-extrabold text-base tracking-tight ${
-                  isDarkMode ? 'text-white' : 'text-slate-900'
-                }`}>CampusSync</span>
-                <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
-                  isDarkMode 
-                    ? 'text-emerald-400 bg-emerald-950/40 border-emerald-800/40' 
-                    : 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                }`}>PRO</span>
+            <button
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              aria-label="Toggle Sidebar"
+              className={`p-2 rounded-xl transition-all shrink-0 ${
+                isDarkMode 
+                  ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' 
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className={`p-2 rounded-xl font-black text-xs shrink-0 flex items-center justify-center ${
+                isDarkMode ? 'bg-emerald-500 text-zinc-950 shadow-emerald-500/20' : 'bg-emerald-600 text-white'
+              }`}>
+                <span>⚡</span>
               </div>
-              <div className={`text-[10px] ${isDarkMode ? 'text-zinc-400' : 'text-slate-400'}`}>
-                College Governance OS
-              </div>
+              {isSidebarOpen && (
+                <div className="overflow-hidden">
+                  <span className={`font-extrabold text-base tracking-tight truncate block ${
+                    isDarkMode ? 'text-white' : 'text-slate-900'
+                  }`}>CampusNexus</span>
+                  <div className={`text-[10px] tracking-tight truncate ${isDarkMode ? 'text-zinc-400' : 'text-slate-400'}`}>
+                    Student Governance
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-4 space-y-1.5">
-            <div className={`text-[10px] font-bold uppercase px-3 mb-2 tracking-wider ${
-              isDarkMode ? 'text-zinc-500' : 'text-slate-400'
-            }`}>
-              Student Modules
-            </div>
+          <nav className="p-3 space-y-1.5">
             {navItems.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -200,7 +268,8 @@ export default function StudentApp() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  title={!isSidebarOpen ? tab.label : ''}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive 
                       ? isDarkMode 
                         ? 'bg-zinc-800 text-emerald-400 border border-emerald-500/30 shadow-sm' 
@@ -210,23 +279,8 @@ export default function StudentApp() {
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className="w-4 h-4" />
-                    <span>{tab.label}</span>
-                  </div>
-                  {tab.badge && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold border ${
-                      isActive 
-                        ? isDarkMode
-                          ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/50'
-                          : 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                        : isDarkMode
-                          ? 'bg-zinc-800 text-zinc-400 border-zinc-700'
-                          : 'bg-slate-100 text-slate-500 border-slate-200'
-                    }`}>
-                      {tab.badge}
-                    </span>
-                  )}
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {isSidebarOpen && <span className="truncate">{tab.label}</span>}
                 </button>
               );
             })}
@@ -234,24 +288,32 @@ export default function StudentApp() {
         </div>
 
         {/* Sidebar Footer User Profile */}
-        <div className={`p-4 border-t ${isDarkMode ? 'border-zinc-800' : 'border-slate-100'}`}>
-          <div className={`p-3 rounded-xl border flex items-center gap-3 ${
-            isDarkMode ? 'bg-zinc-850/50 border-zinc-800' : 'bg-slate-50 border-slate-200'
-          }`}>
+        <div className={`p-3 border-t ${isDarkMode ? 'border-zinc-800' : 'border-slate-100'}`}>
+          <button
+            onClick={() => setIsProfileModalOpen(true)}
+            title="View student profile"
+            className={`w-full p-2.5 rounded-xl border flex items-center gap-3 text-left transition-all ${
+              isDarkMode 
+                ? 'bg-zinc-800/60 hover:bg-zinc-800 border-zinc-800 hover:border-emerald-500/30' 
+                : 'bg-slate-50 hover:bg-slate-100 border-slate-200 hover:border-emerald-300'
+            }`}
+          >
             <div className={`w-9 h-9 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
               isDarkMode ? 'bg-emerald-500 text-zinc-950' : 'bg-emerald-600 text-white'
             }`}>
-              KV
+              {initials}
             </div>
-            <div className="overflow-hidden">
-              <div className={`font-bold text-xs truncate ${isDarkMode ? 'text-zinc-100' : 'text-slate-900'}`}>
-                {studentProfile.name}
+            {isSidebarOpen && (
+              <div className="overflow-hidden flex-1">
+                <div className={`font-bold text-xs truncate ${isDarkMode ? 'text-zinc-100' : 'text-slate-900'}`}>
+                  {studentProfile.name}
+                </div>
+                <div className={`text-[10px] font-mono truncate ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
+                  {studentProfile.rollNo}
+                </div>
               </div>
-              <div className={`text-[10px] truncate ${isDarkMode ? 'text-zinc-400' : 'text-slate-400'}`}>
-                {studentProfile.rollNo} • {studentProfile.semester}
-              </div>
-            </div>
-          </div>
+            )}
+          </button>
         </div>
       </aside>
 
@@ -259,27 +321,15 @@ export default function StudentApp() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
         <header className={`border-b sticky top-0 z-30 h-16 px-6 flex items-center justify-between backdrop-blur-md transition-colors ${
-          isDarkMode 
-            ? 'bg-zinc-900/90 border-zinc-800' 
-            : 'bg-white/90 border-slate-200'
+          isDarkMode ? 'bg-zinc-900/90 border-zinc-800' : 'bg-white/90 border-slate-200'
         }`}>
           <div className="flex items-center gap-2">
             <div className={`text-xs font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
-              Campus Platform / <span className={`font-bold capitalize ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{activeTab}</span>
+              CampusNexus / <span className={`font-bold capitalize ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{activeTab}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Campus Tag */}
-            <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ${
-              isDarkMode 
-                ? 'bg-zinc-800 border-zinc-700 text-zinc-300' 
-                : 'bg-slate-100 border-slate-200 text-slate-600'
-            }`}>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Main Engineering Block
-            </div>
-
             {/* Theme Toggle Button */}
             <button
               onClick={() => setIsDarkMode(prev => !prev)}
@@ -303,14 +353,15 @@ export default function StudentApp() {
               )}
             </button>
 
-            {/* Notifications (live, driven by admin + automation) */}
-            <div className="relative">
+            {/* Notifications */}
+            <div className="relative" ref={notifRef}>
               <button
                 onClick={() => {
                   const open = !isNotifOpen;
                   setIsNotifOpen(open);
-                  if (open) actions.markRead(roll);
+                  if (open) actions.markRead(CURRENT_STUDENT_ROLL);
                 }}
+                aria-label="Notifications"
                 className={`p-2 rounded-xl transition-all relative border ${
                   isDarkMode 
                     ? 'text-zinc-400 hover:text-white hover:bg-zinc-800 border-zinc-800' 
@@ -324,29 +375,55 @@ export default function StudentApp() {
                   </span>
                 )}
               </button>
+
               {isNotifOpen && (
-                <div className={`absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border shadow-2xl z-40 ${
+                <div className={`absolute right-0 mt-2 w-80 md:w-96 rounded-2xl border shadow-2xl z-40 overflow-hidden ${
                   isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'
                 }`}>
-                  <div className={`px-4 py-2.5 text-xs font-bold border-b ${isDarkMode ? 'border-zinc-800 text-white' : 'border-slate-100 text-slate-900'}`}>
-                    Notifications
+                  <div className={`px-4 py-3 text-xs font-bold border-b flex items-center justify-between ${
+                    isDarkMode ? 'border-zinc-800 text-white' : 'border-slate-100 text-slate-900'
+                  }`}>
+                    <span>Notifications</span>
+                    <button
+                      onClick={() => actions.markRead(CURRENT_STUDENT_ROLL)}
+                      className="text-[11px] text-emerald-500 hover:underline font-semibold"
+                    >
+                      Mark all read
+                    </button>
                   </div>
-                  {myNotifications.length === 0 && (
-                    <div className={`p-4 text-xs ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>No notifications yet.</div>
-                  )}
-                  {myNotifications.slice(0, 20).map((n) => (
-                    <div key={n.id} className={`px-4 py-2.5 text-xs border-b last:border-0 ${
-                      isDarkMode ? 'border-zinc-800 text-zinc-300' : 'border-slate-100 text-slate-700'
-                    }`}>
-                      <span className={`inline-block w-1.5 h-1.5 rounded-full mr-2 ${
-                        n.tone === 'good' ? 'bg-emerald-500' : n.tone === 'bad' ? 'bg-rose-500' : n.tone === 'warn' ? 'bg-amber-500' : 'bg-sky-500'
-                      }`} />
-                      {n.text}
-                      <div className={`text-[10px] mt-0.5 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
-                        {new Date(n.ts).toLocaleString()}
+
+                  <div className="max-h-72 overflow-y-auto">
+                    {myNotifications.length === 0 && (
+                      <div className={`p-4 text-xs ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
+                        No notifications yet.
                       </div>
-                    </div>
-                  ))}
+                    )}
+                    {myNotifications.slice(0, 5).map((n) => (
+                      <div key={n.id} className={`px-4 py-2.5 text-xs border-b last:border-0 ${
+                        isDarkMode ? 'border-zinc-800 text-zinc-300' : 'border-slate-100 text-slate-700'
+                      }`}>
+                        <span className={`inline-block w-1.5 h-1.5 rounded-full mr-2 ${
+                          n.tone === 'good' ? 'bg-emerald-500' : n.tone === 'bad' ? 'bg-rose-500' : n.tone === 'warn' ? 'bg-amber-500' : 'bg-sky-500'
+                        }`} />
+                        {n.text}
+                        <div className={`text-[10px] mt-0.5 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
+                          {new Date(n.ts).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={`p-2.5 border-t ${isDarkMode ? 'border-zinc-800 bg-zinc-950/50' : 'border-slate-100 bg-slate-50'}`}>
+                    <button
+                      onClick={() => {
+                        setIsNotifOpen(false);
+                        setIsFullNotifOpen(true);
+                      }}
+                      className="w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
+                    >
+                      Show all ({myNotifications.length}) <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -430,16 +507,323 @@ export default function StudentApp() {
         </main>
       </div>
 
-      {/* --- ALL MODALS (DYNAMIC THEMING) --- */}
+      {/* --- CLEAN EXECUTIVE STUDENT PROFILE MODAL (CLICK OUTSIDE TO CLOSE) --- */}
+      {isProfileModalOpen && (
+        <div 
+          onClick={() => setIsProfileModalOpen(false)}
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`max-w-4xl w-full rounded-3xl border shadow-2xl overflow-hidden transition-all ${
+              isDarkMode ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
+            {/* Top Banner Header */}
+            <div className={`px-6 py-6 md:px-8 md:py-7 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+              isDarkMode 
+                ? 'bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border-zinc-800' 
+                : 'bg-gradient-to-r from-slate-50 via-white to-slate-50 border-slate-200'
+            }`}>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-zinc-950 font-black text-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
+                  {initials}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl md:text-2xl font-extrabold tracking-tight">{studentProfile.name}</h2>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      <ShieldCheck className="w-3 h-3" /> Verified
+                    </span>
+                  </div>
+                  <div className={`text-xs font-mono mt-1 flex flex-wrap items-center gap-2 ${
+                    isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                  }`}>
+                    <span className="font-semibold text-emerald-500">{studentProfile.rollNo}</span>
+                    <span>•</span>
+                    <span>{studentProfile.branch}</span>
+                    <span>•</span>
+                    <span>{studentProfile.semester}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setIsProfileModalOpen(false)}
+                aria-label="Close profile"
+                className={`self-end sm:self-center p-2 rounded-xl border transition-colors ${
+                  isDarkMode 
+                    ? 'border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800' 
+                    : 'border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Key Metrics Strip */}
+            <div className={`grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x border-b ${
+              isDarkMode ? 'divide-zinc-800 border-zinc-800 bg-zinc-950/40' : 'divide-slate-200 border-slate-200 bg-slate-50/60'
+            }`}>
+              <div className="p-4 text-center">
+                <div className={`text-[11px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Cumulative CGPA</div>
+                <div className="text-lg font-black text-emerald-500 mt-0.5">{studentProfile.cgpa} / 10</div>
+              </div>
+              <div className="p-4 text-center">
+                <div className={`text-[11px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Super 50 Standing</div>
+                <div className="text-lg font-black text-amber-500 mt-0.5">
+                  {super50.myRank ? `Rank #${super50.myRank}` : 'Unranked'}
+                </div>
+              </div>
+              <div className="p-4 text-center">
+                <div className={`text-[11px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Committee Drives</div>
+                <div className="text-lg font-black mt-0.5">{appliedCommittees.length} Applied</div>
+              </div>
+              <div className="p-4 text-center">
+                <div className={`text-[11px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Active Passes</div>
+                <div className="text-lg font-black text-emerald-500 mt-0.5">{myPasses.length} Verified</div>
+              </div>
+            </div>
+
+            {/* Structured Two-Column Body */}
+            <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column: Committee Applications & Event Passes */}
+              <div className="space-y-5">
+                <div>
+                  <h3 className={`text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2 ${
+                    isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                  }`}>
+                    <Briefcase className="w-3.5 h-3.5 text-emerald-500" /> Committee Applications & Roles
+                  </h3>
+                  {appliedCommittees.length === 0 ? (
+                    <div className={`p-4 rounded-2xl border text-xs ${
+                      isDarkMode ? 'bg-zinc-950/50 border-zinc-800 text-zinc-500' : 'bg-slate-50 border-slate-200 text-slate-400'
+                    }`}>
+                      No active committee applications yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {appliedCommittees.map((app) => (
+                        <div key={app.id} className={`p-4 rounded-2xl border ${
+                          isDarkMode ? 'bg-zinc-950/60 border-zinc-800' : 'bg-slate-50 border-slate-200'
+                        }`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="font-bold text-sm">{app.name}</div>
+                              <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
+                                Role: <span className="font-medium">{app.role}</span>
+                              </div>
+                            </div>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${
+                              app.status === 'Rejected'
+                                ? 'bg-rose-500/10 text-rose-500 border-rose-500/30'
+                                : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
+                            }`}>
+                              {app.status}
+                            </span>
+                          </div>
+                          {app.interviewSlot && (
+                            <div className={`mt-3 pt-2.5 border-t text-[11px] flex items-center gap-1.5 ${
+                              isDarkMode ? 'border-zinc-800 text-zinc-400' : 'border-slate-200 text-slate-600'
+                            }`}>
+                              <Clock className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                              <span>Next Event / Slot: <b className="text-emerald-500">{app.interviewSlot}</b></span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Registered Event Passes */}
+                <div>
+                  <h3 className={`text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2 ${
+                    isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                  }`}>
+                    <Ticket className="w-3.5 h-3.5 text-emerald-500" /> Issued Gate Passes
+                  </h3>
+                  {myPasses.length === 0 ? (
+                    <div className={`p-4 rounded-2xl border text-xs ${
+                      isDarkMode ? 'bg-zinc-950/50 border-zinc-800 text-zinc-500' : 'bg-slate-50 border-slate-200 text-slate-400'
+                    }`}>
+                      No event passes booked yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {myPasses.map((p) => (
+                        <div key={p.id} className={`px-4 py-3 rounded-xl border flex items-center justify-between text-xs ${
+                          isDarkMode ? 'bg-zinc-950/60 border-zinc-800' : 'bg-slate-50 border-slate-200'
+                        }`}>
+                          <span className="font-semibold truncate pr-2">{p.eventTitle}</span>
+                          <span className="font-mono text-[11px] font-bold text-emerald-500 shrink-0">{p.passId}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Super 50 Cohort Analytics */}
+              <div>
+                <h3 className={`text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2 ${
+                  isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                }`}>
+                  <Award className="w-3.5 h-3.5 text-amber-500" /> Super 50 Cohort Evaluation
+                </h3>
+
+                {mySuper50Row ? (
+                  <div className={`p-5 rounded-2xl border space-y-4 ${
+                    isDarkMode ? 'bg-zinc-950/60 border-zinc-800' : 'bg-slate-50 border-slate-200'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-zinc-400">Overall Cohort Position</div>
+                        <div className="text-xl font-black mt-0.5">
+                          Rank #{mySuper50Row.rank} <span className="text-xs font-normal text-zinc-500">of {super50.total}</span>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                        {mySuper50Row.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2.5">
+                      <div className={`p-3 rounded-xl border text-center ${
+                        isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'
+                      }`}>
+                        <div className="text-[10px] text-zinc-400">Aptitude</div>
+                        <div className="text-sm font-extrabold mt-0.5">{mySuper50Row.assessmentScore}</div>
+                      </div>
+                      <div className={`p-3 rounded-xl border text-center ${
+                        isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'
+                      }`}>
+                        <div className="text-[10px] text-zinc-400">Rubric</div>
+                        <div className="text-sm font-extrabold mt-0.5">{mySuper50Row.interviewScore}</div>
+                      </div>
+                      <div className={`p-3 rounded-xl border text-center ${
+                        isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'
+                      }`}>
+                        <div className="text-[10px] text-zinc-400">Composite</div>
+                        <div className="text-sm font-extrabold text-emerald-500 mt-0.5">{mySuper50Row.compositeScore}</div>
+                      </div>
+                    </div>
+
+                    {mySuper50Row.rank > 50 ? (
+                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 leading-relaxed">
+                        <b>Improvement Area:</b> Currently outside the Top 50 threshold. Raise your coding assessment or panel rubric score to qualify.
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 leading-relaxed">
+                        You meet all academic and technical benchmarks for the Super 50 flagship cohort.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className={`p-5 rounded-2xl border text-xs space-y-2 ${
+                    isDarkMode ? 'bg-zinc-950/60 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600'
+                  }`}>
+                    <div className="font-bold text-sm text-amber-500">Not Yet Ranked</div>
+                    <p className="leading-relaxed">
+                      You have not completed the Super 50 proctored coding assessment and panel interview yet. Complete both evaluations to unlock your cohort rank.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- FULL-SCREEN NOTIFICATIONS MODAL (CLICK OUTSIDE TO CLOSE) --- */}
+      {isFullNotifOpen && (
+        <div 
+          onClick={() => setIsFullNotifOpen(false)}
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`max-w-3xl w-full rounded-3xl border p-6 md:p-8 shadow-2xl relative ${
+              isDarkMode ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
+            <div className={`flex items-center justify-between pb-5 border-b ${
+              isDarkMode ? 'border-zinc-800' : 'border-slate-200'
+            }`}>
+              <div>
+                <h2 className="text-xl font-extrabold flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-emerald-500" /> All Notifications
+                </h2>
+                <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
+                  Complete activity log of committee updates, passes, and SLA alerts.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => actions.markRead(CURRENT_STUDENT_ROLL)}
+                  className="text-xs text-emerald-500 hover:underline font-semibold flex items-center gap-1"
+                >
+                  <CheckCheck className="w-4 h-4" /> Mark all read
+                </button>
+                <button 
+                  onClick={() => setIsFullNotifOpen(false)}
+                  className={`p-2 rounded-xl border ${
+                    isDarkMode ? 'border-zinc-800 text-zinc-400 hover:text-white' : 'border-slate-200 text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">
+              {myNotifications.length === 0 ? (
+                <div className={`p-8 text-center text-xs rounded-2xl border ${
+                  isDarkMode ? 'border-zinc-800 text-zinc-500' : 'border-slate-200 text-slate-400'
+                }`}>
+                  No notifications recorded yet.
+                </div>
+              ) : (
+                myNotifications.map((n) => (
+                  <div 
+                    key={n.id} 
+                    className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+                      isDarkMode ? 'bg-zinc-950/70 border-zinc-800' : 'bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                        n.tone === 'good' ? 'bg-emerald-500' : n.tone === 'bad' ? 'bg-rose-500' : n.tone === 'warn' ? 'bg-amber-500' : 'bg-sky-500'
+                      }`} />
+                      <div className="text-xs leading-relaxed">{n.text}</div>
+                    </div>
+                    <span className={`text-[10px] shrink-0 font-mono ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
+                      {new Date(n.ts).toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- OTHER MODALS (CLICK OUTSIDE TO CLOSE) --- */}
 
       {/* 1. Auto-Screening Modal */}
       {isApplyModalOpen && selectedCommittee && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl transition-colors ${
-            isDarkMode 
-              ? 'bg-zinc-900 border-zinc-800 text-zinc-100' 
-              : 'bg-white border-slate-200 text-slate-900'
-          }`}>
+        <div 
+          onClick={() => setIsApplyModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl transition-colors ${
+              isDarkMode 
+                ? 'bg-zinc-900 border-zinc-800 text-zinc-100' 
+                : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
             <h3 className="font-bold text-lg">Apply for {selectedCommittee.name}</h3>
             <p className={`text-xs mt-1 ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
               Designation: <b>{selectedCommittee.role}</b>
@@ -486,12 +870,18 @@ export default function StudentApp() {
 
       {/* 2. Self-Service Slot Modal */}
       {isSlotModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl transition-colors ${
-            isDarkMode 
-              ? 'bg-zinc-900 border-zinc-800 text-zinc-100' 
-              : 'bg-white border-slate-200 text-slate-900'
-          }`}>
+        <div 
+          onClick={() => setIsSlotModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl transition-colors ${
+              isDarkMode 
+                ? 'bg-zinc-900 border-zinc-800 text-zinc-100' 
+                : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
             <h3 className="font-bold text-lg">Select Interview Slot</h3>
             <p className={`text-xs mt-1 ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
               Slots auto-lock upon selection to prevent double bookings.
@@ -531,12 +921,18 @@ export default function StudentApp() {
 
       {/* 3. Event Pass Payment Modal */}
       {isPaymentModalOpen && selectedEventForBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl transition-colors ${
-            isDarkMode 
-              ? 'bg-zinc-900 border-zinc-800 text-zinc-100' 
-              : 'bg-white border-slate-200 text-slate-900'
-          }`}>
+        <div 
+          onClick={() => setIsPaymentModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl transition-colors ${
+              isDarkMode 
+                ? 'bg-zinc-900 border-zinc-800 text-zinc-100' 
+                : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
             <h3 className="font-bold text-lg">Confirm & Pay: {selectedEventForBooking.title}</h3>
             <p className={`text-xs mt-1 ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
               Instant seat reservation with UPI QR simulation.
@@ -577,12 +973,18 @@ export default function StudentApp() {
 
       {/* 4. Raise Grievance Modal */}
       {isGrievanceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl transition-colors ${
-            isDarkMode 
-              ? 'bg-zinc-900 border-zinc-800 text-zinc-100' 
-              : 'bg-white border-slate-200 text-slate-900'
-          }`}>
+        <div 
+          onClick={() => setIsGrievanceModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl transition-colors ${
+              isDarkMode 
+                ? 'bg-zinc-900 border-zinc-800 text-zinc-100' 
+                : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
             <h3 className="font-bold text-lg">Lodge Campus Grievance</h3>
             <p className={`text-xs mt-1 ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
               Protected by a 48-hour automated escalation SLA.

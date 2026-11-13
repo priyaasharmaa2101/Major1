@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   ArrowRight,
@@ -60,7 +59,7 @@ export default function AuthPage({
               name: form.name.trim(),
               email: form.email.trim(),
               password: form.password,
-              rollNo: form.rollNo.trim(),
+              rollNo: form.rollNo.trim().toUpperCase(),
               role,
               ...(role === 'admin'
                 ? { adminSetupKey: form.adminSetupKey }
@@ -81,10 +80,6 @@ export default function AuthPage({
       });
 
       const responseText = await response.text();
-
-      console.log('Auth API:', `${API}${endpoint}`);
-      console.log('HTTP status:', response.status);
-      console.log('API response:', responseText);
 
       let data;
 
@@ -116,14 +111,24 @@ export default function AuthPage({
         );
       }
 
+      const savedUser = {
+        ...data.user,
+        name: data.user.name || form.name.trim() || 'Student User',
+        rollNo: (
+          data.user.rollNo ||
+          form.rollNo.trim() ||
+          ''
+        ).toUpperCase(),
+      };
+
       localStorage.setItem('campusToken', data.token);
       localStorage.setItem(
         'campusUser',
-        JSON.stringify(data.user)
+        JSON.stringify(savedUser)
       );
 
       if (typeof onAuthenticated === 'function') {
-        onAuthenticated(data.user);
+        onAuthenticated(savedUser);
       }
     } catch (err) {
       console.error('Authentication error:', err);
@@ -164,7 +169,7 @@ export default function AuthPage({
 
           <span>
             Campus
-            <span className="brand-light">Sync</span>
+            <span className="brand-light">Nexus</span>
           </span>
         </div>
 
@@ -205,7 +210,7 @@ export default function AuthPage({
 
         <div className="story-footer">
           <span>BUILT FOR CAMPUS COMMUNITIES</span>
-          <span>© 2026 CampusSync</span>
+          <span>© 2026 CampusNexus</span>
         </div>
 
         <div className="story-orb orb-one" />
@@ -214,7 +219,7 @@ export default function AuthPage({
 
       <section className="auth-panel">
         <div className="auth-panel-top">
-          <span className="mobile-brand">CampusSync</span>
+          <span className="mobile-brand">CampusNexus</span>
 
           <span className="secure-label">
             <ShieldCheck size={15} />
@@ -329,7 +334,7 @@ export default function AuthPage({
                   placeholder={
                     role === 'admin'
                       ? 'e.g. Dr. Rajesh Sharma'
-                      : 'e.g. Aanya Sharma'
+                      : 'e.g. Samriddhi Agrawal'
                   }
                   autoComplete="name"
                   required
@@ -360,8 +365,9 @@ export default function AuthPage({
             {mode === 'signup' && (
               <label>
                 {role === 'admin' ? 'Staff / Admin ID' : 'Roll number'}
-
-                <span className="optional-label"> (optional)</span>
+                {role === 'admin' && (
+                  <span className="optional-label"> (optional)</span>
+                )}
 
                 <input
                   name="rollNo"
@@ -370,8 +376,9 @@ export default function AuthPage({
                   placeholder={
                     role === 'admin'
                       ? 'e.g. ADM-2026'
-                      : 'e.g. 23CS1089'
+                      : 'e.g. 0187CS231202'
                   }
+                  required={role === 'student'}
                 />
               </label>
             )}
@@ -438,7 +445,7 @@ export default function AuthPage({
                 : mode === 'login'
                   ? role === 'admin'
                     ? 'Sign in to Admin Console'
-                    : 'Sign in to CampusSync'
+                    : 'Sign in to CampusNexus'
                   : role === 'admin'
                     ? 'Create Admin Account'
                     : 'Create Student Account'}
