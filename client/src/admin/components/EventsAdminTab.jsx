@@ -40,6 +40,7 @@ export default function EventsAdminTab({ toast }) {
         {db.events.map((e) => {
           const sold = e.seatsTotal - e.seatsLeft;
           const pct = e.seatsTotal ? Math.round((sold / e.seatsTotal) * 100) : 0;
+          const rev = db.payments.filter((p) => p.eventId === e.id && p.status === 'Verified').reduce((n, p) => n + p.amount, 0);
           return (
             <Card key={e.id} className="p-5">
               <div className="flex items-center justify-between mb-2">
@@ -52,7 +53,7 @@ export default function EventsAdminTab({ toast }) {
                 <div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} />
               </div>
               <div className={`text-[11px] mt-1 ${t.faint}`}>
-                {sold}/{e.seatsTotal} booked • ₹{e.price}{e.priceUnit} • revenue ₹{(db.payments.filter((p) => p.eventId === e.id && p.status === 'Verified').reduce((n, p) => n + p.amount, 0)).toLocaleString('en-IN')}
+                {sold}/{e.seatsTotal} booked • ₹{e.price}{e.priceUnit} • revenue ₹{rev.toLocaleString('en-IN')}
               </div>
               <div className="flex gap-2 mt-4">
                 <Btn size="sm" onClick={() => setForm({ ...e })}><Pencil className="w-3 h-3" /> Edit</Btn>

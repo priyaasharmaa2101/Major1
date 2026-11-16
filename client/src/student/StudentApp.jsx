@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, Award, Calendar, AlertCircle, Ticket, CheckCircle2, 
   Clock, Bell, ShieldCheck, Sparkles, LayoutDashboard,
-  Sun, Moon, Menu, X, ArrowRight, CheckCheck, Briefcase
+  Sun, Moon, Menu, X, ArrowRight, CheckCheck, Briefcase, LogOut
 } from 'lucide-react';
 
 import OverviewTab from './components/OverviewTab';
@@ -14,7 +14,7 @@ import GrievanceTab from './components/GrievanceTab';
 import { useDB, actions, select, getDB, CURRENT_STUDENT_ROLL } from '../shared/store';
 import { useAutomationLoop } from '../shared/hooks';
 
-export default function StudentApp() {
+export default function StudentApp({ onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [toastMessage, setToastMessage] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -27,6 +27,11 @@ export default function StudentApp() {
   const notifRef = useRef(null);
 
   // Close notification dropdown on outside click
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('light-theme', !isDarkMode);
+  }, [isDarkMode]);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
@@ -57,6 +62,20 @@ export default function StudentApp() {
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Working Logout Handler
+  const handleLogout = () => {
+    localStorage.removeItem('campusToken');
+    localStorage.removeItem('campusUser');
+    localStorage.removeItem('campusnexus_user');
+    setIsProfileModalOpen(false);
+
+    if (typeof onLogout === 'function') {
+      onLogout();
+    } else {
+      window.location.href = '/';
+    }
   };
 
   // ---- Shared Store Data + Authenticated Sign-Up User Override ----
@@ -730,6 +749,34 @@ export default function StudentApp() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Footer Action Bar with Working Logout Button */}
+            <div className={`px-6 py-4 md:px-8 border-t flex items-center justify-between gap-4 ${
+              isDarkMode ? 'border-zinc-800 bg-zinc-950/60' : 'border-slate-200 bg-slate-50'
+            }`}>
+              <button
+                onClick={handleLogout}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border ${
+                  isDarkMode
+                    ? 'bg-rose-950/40 hover:bg-rose-950/70 text-rose-400 border-rose-800/50'
+                    : 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200'
+                }`}
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+
+              <button
+                onClick={() => setIsProfileModalOpen(false)}
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  isDarkMode
+                    ? 'bg-zinc-800 hover:bg-zinc-700 text-white'
+                    : 'bg-slate-200 hover:bg-slate-300 text-slate-900'
+                }`}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

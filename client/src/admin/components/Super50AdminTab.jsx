@@ -54,7 +54,10 @@ export default function Super50AdminTab({ toast }) {
             {ranked.map((c) => (
               <tr key={`${c.rollNo}-${c.assessment}-${c.interview}`} className={t.rowHover}>
                 <td className={`px-4 py-3 font-black ${t.strong}`}>#{c.rank}</td>
-                <td className="px-4 py-3"><div className={`font-bold ${t.strong}`}>{c.name}</div><div className={t.faint}>{c.rollNo} • {c.branch}</div></td>
+                <td className="px-4 py-3">
+                  <div className={`font-bold ${t.strong}`}>{c.name}</div>
+                  <div className={t.faint}>{c.rollNo} • {c.branch}</div>
+                </td>
                 <td className="px-4 py-3 w-32">
                   <input type="number" min="0" max="100" defaultValue={c.assessment} onBlur={(e) => saveScore(c, 'assessment', e.target.value)}
                     className={`w-24 text-xs p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${t.input}`} />

@@ -1,8 +1,33 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: dark;
+  --sb-track: #09090b;      /* Zinc-950 (Dark Mode) */
+  --sb-thumb: #27272a;      /* Zinc-800 (Dark Mode) */
+  --sb-thumb-hover: #10b981; /* Emerald-500 */
+}
+
+html.light-theme {
+  color-scheme: light;
+  --sb-track: #f8fafc;      /* Slate-50 (Light Mode) */
+  --sb-thumb: #cbd5e1;      /* Slate-300 (Light Mode) */
+  --sb-thumb-hover: #059669; /* Emerald-600 */
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--sb-track);
+}
+
+body {
+  background-color: var(--sb-track);
+  margin: 0;
+}
+
+/* Custom Selection Highlight */
 ::selection {
-  background-color: #10b981; /* Emerald-500 */
-  color: #09090b;            /* Zinc-950 Dark Text for contrast */
+  background-color: #10b981;
+  color: #09090b;
 }
 
 ::-moz-selection {
@@ -10,6 +35,37 @@
   color: #09090b;
 }
 
-html {
-  scroll-behavior: smooth;
+/* --- Dynamic Theme-Matched Scrollbars --- */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: var(--sb-track);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: 9999px;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover);
+}
+
+/* Firefox Support */
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
 }

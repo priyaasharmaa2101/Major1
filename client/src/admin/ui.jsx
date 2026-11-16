@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 /* Theme context so every admin component can be dark/light without prop drilling */
@@ -183,9 +183,24 @@ export function Toggle({ checked, onChange }) {
 
 export function Modal({ title, onClose, children, wide = false }) {
   const t = useT();
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm overflow-y-auto">
-      <div className={`border rounded-2xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} p-6 shadow-2xl ${t.card} ${t.strong}`}>
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm overflow-y-auto"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className={`border rounded-2xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} p-6 shadow-2xl ${t.card} ${t.strong}`}
+      >
         <div className="flex items-start justify-between mb-4">
           <h3 className="font-bold text-lg">{title}</h3>
           <button onClick={onClose} className={`p-1 rounded-lg ${t.muted} hover:opacity-70`} aria-label="Close">
