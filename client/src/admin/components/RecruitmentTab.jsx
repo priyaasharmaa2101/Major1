@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Check, X, UserCheck, Zap, Lock } from 'lucide-react';
+import { Check, X, UserCheck, Zap, Lock, Sparkles } from 'lucide-react';
 import { useDB, actions, fmtDate } from '../../shared/store';
 import { Card, Badge, Btn, PageHeader, Select, Empty, statusTone, useT } from '../ui';
-
+import { updateApplicationRemote } from '../../shared/applicationService';
+import { bookSlotRemote } from '../../shared/slotService';
+import AIReviewModal from './AIReviewModal';
 const STATUSES = ['All', 'Applied', 'Shortlisted', 'Slot Booked', 'Selected', 'Rejected'];
 
 export default function RecruitmentTab({ toast, adminProfile }) {
@@ -10,7 +12,8 @@ export default function RecruitmentTab({ toast, adminProfile }) {
   const t = useT();
   const [committee, setCommittee] = useState('all');
   const [status, setStatus] = useState('All');
-
+  const [reviewApp, setReviewApp] = useState(null);
+  const update = (id, body) => updateApplicationRemote(id, body).catch((e) => toast(e.message));
   const canManageCommittee = (c) => {
     if (!c || !adminProfile) return false;
     const myEmail = (adminProfile.email || '').trim().toLowerCase();
@@ -18,7 +21,6 @@ export default function RecruitmentTab({ toast, adminProfile }) {
 
     // Primary creator or lead
     if (c.createdBy && myEmail && c.createdBy.toLowerCase() === myEmail) return true;
-    if (myName && (c.lead || '').toLowerCase().includes(myName)) return true;
 
     // Accepted co-admin contributor
     const collabs = Array.isArray(c.collaborators) ? c.collaborators : [];
@@ -39,17 +41,10 @@ export default function RecruitmentTab({ toast, adminProfile }) {
 
   return (
     <div className="space-y-5">
-      <PageHeader
+            <PageHeader
         title="Recruitment & Interviews"
         subtitle="Screen, schedule, score, and hire candidates for committees you lead or co-manage."
-      >
-        <Btn size="sm" onClick={() => toast(`Screened ${actions.screenPending()} application(s)`)}>
-          <Zap className="w-3.5 h-3.5" /> Screen pending
-        </Btn>
-        <Btn size="sm" onClick={() => toast(`Allocated ${actions.allocateSlots()} slot(s)`)}>
-          <Zap className="w-3.5 h-3.5" /> Allocate slots
-        </Btn>
-      </PageHeader>
+      />
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="w-56">
@@ -115,10 +110,7 @@ export default function RecruitmentTab({ toast, adminProfile }) {
                       isOwner ? (
                         <Select
                           value={a.slotId || ''}
-                          onChange={(e) => {
-                            const r = actions.assignSlotToApp(a.id, e.target.value);
-                            if (r && !r.ok) toast(r.error || 'Could not assign');
-                          }}
+                                                   onChange={(e) => bookSlotRemote(a.id, e.target.value).catch((err) => toast(err.message))}
                         >
                           <option value="" disabled>Choose slot…</option>
                           {db.slots.map((s) => (
@@ -137,14 +129,21 @@ export default function RecruitmentTab({ toast, adminProfile }) {
                   <td className="px-4 py-3 w-24">
                     {a.status === 'Slot Booked' || a.status === 'Selected' ? (
                       isOwner ? (
-                        <input
+                                               <input
                           key={`${a.id}-${a.interviewScore}`}
                           type="number" min="0" max="10" step="0.1"
                           defaultValue={a.interviewScore ?? ''}
                           placeholder="0-10"
                           onBlur={(e) => {
                             const v = e.target.value;
-                            if (String(a.interviewScore ?? '') !== v) actions.setInterviewScore(a.id, v);
+                            if (String(a.interviewScore ?? '') === v) return;
+                            const body = { interviewScore: v };
+                            if (db.settings.autoSelect && a.status === 'Slot Booked' && v !== '') {
+                              const pass = Number(v) >= db.settings.selectionThreshold;
+                              body.status = pass ? 'Selected' : 'Rejected';
+                              if (!pass) body.remark = `Interview score below ${db.settings.selectionThreshold}`;
+                            }
+                            update(a.id, body);
                           }}
                           onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                           className={`w-20 text-xs p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${t.input}`}
@@ -158,24 +157,27 @@ export default function RecruitmentTab({ toast, adminProfile }) {
                   </td>
                   <td className="px-4 py-3">
                     {isOwner ? (
-                      <div className="flex gap-1.5">
-                        {a.status === 'Applied' && (
-                          <Btn size="sm" onClick={() => actions.setApplicationStatus(a.id, 'Shortlisted')}>
+                      <div className="flex gap-1.5 flex-wrap">
+                        <Btn size="sm" onClick={() => setReviewApp(a)}>
+                          <Sparkles className="w-3 h-3" /> AI review
+                        </Btn>
+                                               {a.status === 'Applied' && (
+                          <Btn size="sm" onClick={() => update(a.id, { status: 'Shortlisted' })}>
                             <Check className="w-3 h-3" /> Shortlist
                           </Btn>
                         )}
                         {['Shortlisted', 'Slot Booked'].includes(a.status) && (
-                          <Btn size="sm" variant="primary" onClick={() => actions.setApplicationStatus(a.id, 'Selected')}>
+                          <Btn size="sm" variant="primary" onClick={() => update(a.id, { status: 'Selected' })}>
                             <UserCheck className="w-3 h-3" /> Select
                           </Btn>
                         )}
                         {a.status !== 'Rejected' && (
-                          <Btn size="sm" onClick={() => actions.setApplicationStatus(a.id, 'Rejected')}>
+                          <Btn size="sm" onClick={() => update(a.id, { status: 'Rejected' })}>
                             <X className="w-3 h-3" /> Reject
                           </Btn>
                         )}
                         {a.status === 'Rejected' && (
-                          <Btn size="sm" onClick={() => actions.setApplicationStatus(a.id, 'Shortlisted')}>Reconsider</Btn>
+                          <Btn size="sm" onClick={() => update(a.id, { status: 'Shortlisted' })}>Reconsider</Btn>
                         )}
                       </div>
                     ) : (
@@ -191,6 +193,15 @@ export default function RecruitmentTab({ toast, adminProfile }) {
         </table>
         {rows.length === 0 && <Empty>No applications match these filters.</Empty>}
       </Card>
+
+      {reviewApp && (
+        <AIReviewModal
+          application={reviewApp}
+          student={db.students.find((s) => s.rollNo === reviewApp.rollNo)}
+          committee={db.committees.find((x) => x.id === reviewApp.committeeId)}
+          onClose={() => setReviewApp(null)}
+        />
+      )}
     </div>
   );
 }

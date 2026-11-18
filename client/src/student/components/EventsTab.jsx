@@ -1,6 +1,6 @@
 import React from 'react';
 import { Ticket, Calendar, MapPin, QrCode, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
-
+import { formatEventDate } from '../../shared/dateUtils';
 export default function EventsTab({ events, myPasses, handleBookPass, isDarkMode = true }) {
   return (
     <div className={`space-y-6 transition-colors duration-200 ${
@@ -65,7 +65,7 @@ export default function EventsTab({ events, myPasses, handleBookPass, isDarkMode
                 <div className={`flex items-center gap-2 ${
                   isDarkMode ? 'text-zinc-300' : 'text-slate-700'
                 }`}>
-                  <Calendar className="w-4 h-4 text-emerald-500" /> {event.date}
+                  <Calendar className="w-4 h-4 text-emerald-500" /> {formatEventDate(event.date)}
                 </div>
                 <div className={`flex items-center gap-2 ${
                   isDarkMode ? 'text-zinc-300' : 'text-slate-700'
@@ -92,7 +92,7 @@ export default function EventsTab({ events, myPasses, handleBookPass, isDarkMode
                     : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                 }`}
               >
-                <Ticket className="w-4 h-4" /> {event.seatsLeft <= 0 ? 'Sold Out' : `Book & Pay (${event.price})`}
+                <Ticket className="w-4 h-4" /> {event.seatsLeft <= 0 ? 'Sold Out' : event.numericPrice === 0 ? 'Register (Free)' : `Book & Pay (${event.price})`}
               </button>
             </div>
           </div>

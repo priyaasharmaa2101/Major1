@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useDB, actions, select } from '../../shared/store';
+import { saveCandidateRemote, deleteCandidateRemote } from '../../shared/candidateService';
 import { Card, Badge, Btn, PageHeader, Select, Input, Field, statusTone, Empty, useT } from '../ui';
 
 export default function Super50AdminTab({ toast }) {
@@ -12,16 +13,19 @@ export default function Super50AdminTab({ toast }) {
 
   const saveScore = (c, field, value) => {
     if (Number(value) === c[field] || value === '') return;
-    actions.saveCandidate({ ...c, [field]: Number(value) });
+    saveCandidateRemote({ ...c, [field]: Number(value) }).catch((err) => toast(err.message));
   };
 
   const addCandidate = (e) => {
     e.preventDefault();
     const s = db.students.find((x) => x.rollNo === add.rollNo);
     if (!s) return;
-    actions.saveCandidate({ rollNo: s.rollNo, name: s.name, branch: s.short, assessment: add.assessment, interview: add.interview });
-    toast(`${s.name} added to ranking`);
-    setAdd({ rollNo: '', assessment: '', interview: '' });
+    saveCandidateRemote({ rollNo: s.rollNo, name: s.name, branch: s.branch, assessment: add.assessment, interview: add.interview })
+      .then(() => {
+        toast(`${s.name} added to ranking`);
+        setAdd({ rollNo: '', assessment: '', interview: '' });
+      })
+      .catch((err) => toast(err.message));
   };
 
   return (
@@ -69,7 +73,7 @@ export default function Super50AdminTab({ toast }) {
                 <td className="px-4 py-3 font-bold text-emerald-500">{c.composite.toFixed(1)}%</td>
                 <td className="px-4 py-3"><Badge tone={statusTone[c.confirmed ? 'Confirmed' : 'Waitlisted']}>{c.confirmed ? 'Confirmed' : 'Waitlisted'}</Badge></td>
                 <td className="px-4 py-3">
-                  <Btn size="sm" variant="danger" onClick={() => actions.deleteCandidate(c.rollNo)}><Trash2 className="w-3 h-3" /></Btn>
+                  <Btn size="sm" variant="danger" onClick={() => deleteCandidateRemote(c.rollNo).catch((err) => toast(err.message))}><Trash2 className="w-3 h-3" /></Btn>
                 </td>
               </tr>
             ))}

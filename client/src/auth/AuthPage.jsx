@@ -20,12 +20,16 @@ export default function AuthPage({
   const [mode, setMode] = useState(initialMode);
   const [role, setRole] = useState('student');
 
-  const [form, setForm] = useState({
+    const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
     rollNo: '',
     adminSetupKey: '',
+    cgpa: '',
+    branch: '',
+    semester: '',
+    hostel: 'no',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -63,7 +67,12 @@ export default function AuthPage({
               role,
               ...(role === 'admin'
                 ? { adminSetupKey: form.adminSetupKey }
-                : {}),
+                : {
+                  cgpa: form.cgpa,
+                    branch: form.branch,
+                    semester: form.semester,
+                    hostel: form.hostel === 'yes',
+                }),
             }
           : {
               email: form.email.trim(),
@@ -381,6 +390,54 @@ export default function AuthPage({
                   required={role === 'student'}
                 />
               </label>
+            )}
+                        {mode === 'signup' && role === 'student' && (
+              <>
+                <label>
+                  Branch
+                  <select name="branch" value={form.branch} onChange={update} required>
+                    <option value="">Select your branch</option>
+                    <option>Computer Science</option>
+                    <option>Information Technology</option>
+                    <option>Electronics</option>
+                    <option>Mechanical</option>
+                  </select>
+                </label>
+
+                <label>
+                  Current CGPA
+                  <input
+                    name="cgpa"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="10"
+                    value={form.cgpa}
+                    onChange={update}
+                    placeholder="e.g. 8.25"
+                    required
+                  />
+                </label>
+
+                <label>
+                  Semester
+                  <input
+                    name="semester"
+                    value={form.semester}
+                    onChange={update}
+                    placeholder="e.g. 5"
+                    required
+                  />
+                </label>
+
+                <label>
+                  Hostel resident?
+                  <select name="hostel" value={form.hostel} onChange={update}>
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                  </select>
+                </label>
+              </>
             )}
 
             <label>

@@ -10,13 +10,16 @@ function issueToken(account) {
 function publicUser(account) {
   return { id: account._id, name: account.name, email: account.email,
     rollNo: account.rollNo || account.adminId || '', adminId: account.adminId || account.rollNo || '',
+    cgpa: account.cgpa ?? null, branch: account.branch || '', hostel: Boolean(account.hostel), semester: account.semester || '',
     role: account.role };
 }
 export async function signup(req, res) {
   try {
-    const { name, email, password, rollNo = '', role = 'student', adminSetupKey } = req.body;
-    if (!name?.trim() || !email?.trim() || !password) return res.status(400).json({ message: 'Name, email and password are required.' });
+        const { name, email, password, rollNo = '', role = 'student', adminSetupKey, cgpa, branch, hostel, semester } = req.body;
+        if (!name?.trim() || !email?.trim() || !password) return res.status(400).json({ message: 'Name, email and password are required.' });
     if (password.length < 8) return res.status(400).json({ message: 'Password must contain at least 8 characters.' });
+    if (role !== 'admin' && cgpa !== undefined && cgpa !== '' && (Number(cgpa) < 0 || Number(cgpa) > 10 || Number.isNaN(Number(cgpa))))
+      return res.status(400).json({ message: 'CGPA must be between 0 and 10.' });
     const normalizedEmail = email.trim().toLowerCase();
     const requestedRole = role === 'admin' ? 'admin' : 'student';
     if (requestedRole === 'admin' && (!process.env.ADMIN_SETUP_KEY || adminSetupKey !== process.env.ADMIN_SETUP_KEY))
@@ -26,7 +29,13 @@ export async function signup(req, res) {
     const passwordHash = await bcrypt.hash(password, 12);
     const account = requestedRole === 'admin'
       ? await Admin.create({ name: name.trim(), email: normalizedEmail, passwordHash, adminId: String(rollNo).trim(), department: 'Campus Administration', role: 'admin' })
-      : await User.create({ name: name.trim(), email: normalizedEmail, passwordHash, rollNo: String(rollNo).trim(), role: 'student' });
+            : await User.create({
+          name: name.trim(), email: normalizedEmail, passwordHash, rollNo: String(rollNo).trim(), role: 'student',
+          cgpa: cgpa === '' || cgpa == null ? null : Number(cgpa),
+          branch: String(branch || '').trim(),
+          hostel: Boolean(hostel),
+          semester: String(semester || '').trim(),
+        });
     return res.status(201).json({ message: 'Account created successfully.', token: issueToken(account), user: publicUser(account) });
   } catch (error) {
     if (error.code === 11000) return res.status(409).json({ message: 'An account with this email already exists.' });
@@ -48,5 +57,24 @@ export async function login(req, res) {
   } catch (error) {
     console.error('Login error:', error);
     return res.status(500).json({ message: 'Unable to sign in. Check server configuration and MongoDB connection.' });
+  }
+}
+export async function updateProfile(req, res) {
+  try {
+    const { cgpa, branch, hostel, semester } = req.body;
+    const updates = {};
+    if (cgpa !== undefined) {
+      const n = Number(cgpa);
+      if (Number.isNaN(n) || n < 0 || n > 10) return res.status(400).json({ message: 'CGPA must be between 0 and 10.' });
+      updates.cgpa = n;
+    }
+    if (branch !== undefined) updates.branch = String(branch).trim();
+    if (hostel !== undefined) updates.hostel = Boolean(hostel);
+    if (semester !== undefined) updates.semester = String(semester).trim();
+    const user = await User.findByIdAndUpdate(req.user._id, { $set: updates }, { new: true, runValidators: true });
+    return res.json({ message: 'Profile updated.', user: publicUser(user) });
+  } catch (error) {
+    console.error('Profile error:', error);
+    return res.status(500).json({ message: 'Unable to update profile.' });
   }
 }

@@ -9,13 +9,13 @@
  * and the `actions` below with API calls. The UI will not need to change much.
  */
 import { useSyncExternalStore } from 'react';
-
+import { api } from './api';
 const STORAGE_KEY = 'campussync:db:v1';
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
 
 export const CURRENT_STUDENT_ROLL = '23CS1089';
-
+const SERVER_MANAGES_APPLICATIONS = true;
 /* ------------------------------ helpers ------------------------------ */
 const uid = (prefix) => `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -43,143 +43,84 @@ const SLOT_TIMES = [
   '2:30 PM - 2:50 PM',
 ];
 
-/* ------------------------------ seed data ------------------------------ */
-function seed() {
-  const now = Date.now();
+
+/* ------------------------------ empty initial data ------------------------------ */
+function createEmptyState() {
   return {
     version: 1,
+
     settings: {
-      autoScreening: true, // CGPA / branch / hostel check on every application
-      autoSlot: true, // give shortlisted students the next free interview slot
-      autoSelect: true, // decide automatically once interview score is entered
-      autoPayment: true, // verify payments + issue QR pass instantly
-      autoEscalation: true, // push overdue grievances to Chief Warden
-      autoCloseHiring: true, // close committee on deadline or when vacancies = 0
+      autoScreening: true,
+      autoSlot: true,
+      autoSelect: true,
+      autoPayment: true,
+      autoEscalation: true,
+      autoCloseHiring: true,
       slaHours: 48,
-      selectionThreshold: 7, // min interview score (out of 10) to be selected
+      selectionThreshold: 7,
       cohortSize: 50,
       weightAssessment: 60,
       weightInterview: 40,
     },
-    students: [
-      { rollNo: '23CS1089', name: 'Kabir Verma', branch: 'Computer Science & Engineering', short: 'CSE', semester: '5th Sem', cgpa: 8.42, hostel: true },
-      { rollNo: '23CS1012', name: 'Ananya Deshmukh', branch: 'Computer Science & Engineering', short: 'CSE', semester: '5th Sem', cgpa: 9.1, hostel: false },
-      { rollNo: '23EC1044', name: 'Riddhiman Ghosh', branch: 'Electronics & Communication', short: 'ECE', semester: '5th Sem', cgpa: 8.8, hostel: true },
-      { rollNo: '23IT1023', name: 'Tanmay Saxena', branch: 'Information Technology', short: 'IT', semester: '5th Sem', cgpa: 8.5, hostel: true },
-      { rollNo: '23ME1008', name: 'Ishita Rawat', branch: 'Mechanical Engineering', short: 'ME', semester: '5th Sem', cgpa: 8.0, hostel: true },
-      { rollNo: '23CS1101', name: 'Meera Nair', branch: 'Computer Science & Engineering', short: 'CSE', semester: '5th Sem', cgpa: 6.9, hostel: true },
-      { rollNo: '23EC1120', name: 'Dev Malhotra', branch: 'Electronics & Communication', short: 'ECE', semester: '5th Sem', cgpa: 7.2, hostel: false },
-      { rollNo: '23ME1055', name: 'Sanya Kapoor', branch: 'Mechanical Engineering', short: 'ME', semester: '5th Sem', cgpa: 6.2, hostel: true },
-    ],
-    committees: [
-      {
-        id: 'sac-tech', name: 'SAC Technical Committee', tag: 'Flagship Body',
-        lead: 'Aarav Sharma (B.Tech CS 4th Yr)', role: 'Web & Infrastructure Lead',
-        deadline: isoDay(now + 3 * DAY), minCgpa: 7.5, requiredBranch: 'All Branches', vacancies: 4, hiringOpen: true,
-        description: 'Oversees college technical symposiums, hackathons, and web infrastructure.',
-      },
-      {
-        id: 'hostel-mess', name: 'Hostel & Mess Committee', tag: 'Governance',
-        lead: 'Neha Patel (B.Tech ME 3rd Yr)', role: 'Quality & Inventory Auditor',
-        deadline: isoDay(now + 1 * DAY), minCgpa: 7.0, requiredBranch: 'Hostel Residents Only', vacancies: 6, hiringOpen: true,
-        description: 'Liaison with food vendors, cafeteria management, and hostel maintenance oversight.',
-      },
-      {
-        id: 'cultural-sac', name: 'Cultural & Fiesta Council', tag: 'Events & Arts',
-        lead: 'Rohan Gupta (B.Tech EC 4th Yr)', role: 'Stage & Operations Coordinator',
-        deadline: isoDay(now + 10 * DAY), minCgpa: 6.5, requiredBranch: 'All Branches', vacancies: 8, hiringOpen: true,
-        description: 'Coordinates annual cultural fest Fiesta, Garba nights, and literary events.',
-      },
-    ],
-    slots: [
-      { id: 'slot-1', label: slotLabel(now, 0, SLOT_TIMES[0]), capacity: 1 },
-      { id: 'slot-2', label: slotLabel(now, 0, SLOT_TIMES[1]), capacity: 1 },
-      { id: 'slot-3', label: slotLabel(now, 1, SLOT_TIMES[2]), capacity: 1 },
-      { id: 'slot-4', label: slotLabel(now, 1, SLOT_TIMES[3]), capacity: 1 },
-      { id: 'slot-5', label: slotLabel(now, 2, SLOT_TIMES[0]), capacity: 1 },
-      { id: 'slot-6', label: slotLabel(now, 2, SLOT_TIMES[1]), capacity: 1 },
-    ],
-    applications: [
-      { id: 'APP-100001', committeeId: 'hostel-mess', rollNo: '23CS1089', appliedOn: now - 5 * DAY, status: 'Slot Booked', slotId: 'slot-2', interviewScore: null, remark: '', decidedBy: 'AUTO' },
-      { id: 'APP-100002', committeeId: 'sac-tech', rollNo: '23CS1012', appliedOn: now - 3 * DAY, status: 'Slot Booked', slotId: 'slot-1', interviewScore: null, remark: '', decidedBy: 'AUTO' },
-      { id: 'APP-100003', committeeId: 'hostel-mess', rollNo: '23ME1008', appliedOn: now - 2 * DAY, status: 'Slot Booked', slotId: 'slot-3', interviewScore: null, remark: '', decidedBy: 'AUTO' },
-      { id: 'APP-100004', committeeId: 'sac-tech', rollNo: '23IT1023', appliedOn: now - 2 * HOUR, status: 'Applied', slotId: null, interviewScore: null, remark: '', decidedBy: null },
-      { id: 'APP-100005', committeeId: 'hostel-mess', rollNo: '23CS1101', appliedOn: now - 1 * HOUR, status: 'Applied', slotId: null, interviewScore: null, remark: '', decidedBy: null },
-      { id: 'APP-100006', committeeId: 'cultural-sac', rollNo: '23EC1044', appliedOn: now - 30 * 60 * 1000, status: 'Applied', slotId: null, interviewScore: null, remark: '', decidedBy: null },
-    ],
-    events: [
-      {
-        id: 'garba-2026', title: 'Grand Campus Dandiya & Garba Night 2026', tag: 'Garba Special',
-        date: 'Oct 26, 2026 • 6:30 PM Onwards', venue: 'Main College Amphitheatre',
-        price: 150, priceUnit: '', seatsTotal: 200, seatsLeft: 42,
-        description: 'Traditional Garba celebration with live band DJ, traditional attire contest, and food stalls.',
-      },
-      {
-        id: 'fiesta-hack', title: 'Fiesta 2026: 24-Hour Inter-College Hackathon', tag: 'Fiesta Flagship',
-        date: 'Nov 12-13, 2026 • 10:00 AM', venue: 'SAC Tech Lab & Innovation Block',
-        price: 300, priceUnit: ' / Team', seatsTotal: 40, seatsLeft: 14,
-        description: 'Open to internal college students and external teams. Cash prize pool of ₹50,000.',
-      },
-    ],
-    payments: [
-      { id: 'PAY-100001', eventId: 'garba-2026', rollNo: '23CS1089', name: 'Kabir Verma', amount: 150, status: 'Verified', createdAt: now - 4 * DAY, by: 'AUTO' },
-    ],
-    passes: [
-      { id: 'PASS-7890', eventId: 'garba-2026', eventTitle: 'Grand Campus Dandiya & Garba Night 2026', passId: 'GNB-2026-CS89', userName: 'Kabir Verma', rollNo: '23CS1089', price: '₹150' },
-    ],
-    grievances: [
-      {
-        id: 'TKT-1082', rollNo: '23CS1089', committee: 'Hostel & Mess Committee',
-        title: 'Hot water geyser failure in Block-C 3rd Floor',
-        description: 'Geyser tripping main MCB switch repeatedly since Wednesday morning.',
-        createdAtMs: now - 60 * HOUR, slaHours: 48, status: 'Escalated', response: '',
-      },
-      {
-        id: 'TKT-1094', rollNo: '23CS1089', committee: 'Hostel & Mess Committee',
-        title: 'Mess quality feedback: uneven breakfast distribution',
-        description: 'Morning breakfast running out 30 minutes before official closing time.',
-        createdAtMs: now - 22 * HOUR, slaHours: 48, status: 'In Progress', response: '',
-      },
-      {
-        id: 'TKT-1101', rollNo: '23ME1055', committee: 'SAC Technical Committee',
-        title: 'Wi-Fi down in Innovation Block lab 2',
-        description: 'No network since morning, projects are blocked.',
-        createdAtMs: now - 5 * HOUR, slaHours: 48, status: 'In Progress', response: '',
-      },
-    ],
-    candidates: [
-      { rollNo: '23CS1012', name: 'Ananya Deshmukh', branch: 'CSE', assessment: 98, interview: 9.8 },
-      { rollNo: '23EC1044', name: 'Riddhiman Ghosh', branch: 'ECE', assessment: 96, interview: 9.5 },
-      { rollNo: '23IT1023', name: 'Tanmay Saxena', branch: 'IT', assessment: 95, interview: 9.4 },
-      { rollNo: '23CS1089', name: 'Kabir Verma', branch: 'CSE', assessment: 94, interview: 9.4 },
-      { rollNo: '23ME1008', name: 'Ishita Rawat', branch: 'ME', assessment: 92, interview: 9.2 },
-      { rollNo: '23EC1120', name: 'Dev Malhotra', branch: 'ECE', assessment: 81, interview: 7.9 },
-    ],
+
+    students: [],
+    committees: [],
+    slots: [],
+    applications: [],
+    events: [],
+    payments: [],
+    passes: [],
+    grievances: [],
+    candidates: [],
     notifications: [],
     activity: [],
   };
 }
 
 /* ------------------------------ persistence ------------------------------ */
+
 function load() {
+  const MIGRATION_KEY = 'campussync:demo-data-migration:v1';
+  const BACKUP_KEY = 'campussync:db:v1:backup-before-api';
+
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+
+    // Run the demo-data cleanup only once.
+    if (localStorage.getItem(MIGRATION_KEY) !== 'done') {
+      if (raw && !localStorage.getItem(BACKUP_KEY)) {
+        localStorage.setItem(BACKUP_KEY, raw);
+      }
+
+      const empty = createEmptyState();
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(empty));
+      localStorage.setItem(MIGRATION_KEY, 'done');
+
+      return empty;
+    }
+
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.version === 1) return parsed;
+
+      if (parsed && parsed.version === 1) {
+        return {
+          ...createEmptyState(),
+          ...parsed,
+          settings: {
+            ...createEmptyState().settings,
+            ...(parsed.settings || {}),
+          },
+        };
+      }
     }
-  } catch {
-    /* ignore corrupt storage */
+  } catch (error) {
+    console.error('CampusSync local store initialization failed:', error);
   }
-  const fresh = seed();
-  runAutomation(fresh); // first boot: let automation process the seeded queue
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-  } catch {
-    /* storage may be unavailable */
-  }
-  return fresh;
+
+  return createEmptyState();
 }
+
 
 let db; // initialised at the bottom of this file (needs helpers defined first)
 const listeners = new Set();
@@ -235,9 +176,8 @@ function mutate(fn) {
 const log = (d, by, type, text) => {
   d.activity.unshift({ id: uid('LOG'), ts: Date.now(), by, type, text });
 };
-const notify = (d, to, text, tone = 'info') => {
-  d.notifications.unshift({ id: uid('NTF'), ts: Date.now(), to, text, tone, read: false });
-};
+
+const notify = () => {};
 
 /* ------------------------------ automation engine ------------------------------ */
 const findStudent = (d, roll) => d.students.find((s) => s.rollNo === roll);
@@ -347,7 +287,7 @@ export function runAutomation(d, now = Date.now()) {
   }
 
   // 2. Screening
-  if (s.autoScreening) {
+   if (s.autoScreening && !SERVER_MANAGES_APPLICATIONS)  {
     d.applications.forEach((a) => {
       if (a.status === 'Applied') {
         screenApplication(d, a, 'AUTO');
@@ -357,7 +297,7 @@ export function runAutomation(d, now = Date.now()) {
   }
 
   // 3. Interview slot allocation
-  if (s.autoSlot) {
+  if (s.autoSlot && !SERVER_MANAGES_APPLICATIONS) {
     d.applications.forEach((a) => {
       if (a.status === 'Shortlisted' && !a.slotId) {
         const slot = nextFreeSlot(d, a.rollNo);
@@ -370,7 +310,7 @@ export function runAutomation(d, now = Date.now()) {
   }
 
   // 4. Final selection from interview score
-  if (s.autoSelect) {
+  if (s.autoSelect && !SERVER_MANAGES_APPLICATIONS) {
     d.applications.forEach((a) => {
       if (a.status === 'Slot Booked' && a.interviewScore !== null && a.interviewScore !== undefined) {
         decideSelection(d, a, Number(a.interviewScore) >= s.selectionThreshold, 'AUTO');
@@ -380,7 +320,7 @@ export function runAutomation(d, now = Date.now()) {
   }
 
   // 5. Payments → pass
-  if (s.autoPayment) {
+  if (s.autoPayment && !SERVER_MANAGES_APPLICATIONS) {
     d.payments.forEach((p) => {
       if (p.status === 'Pending') {
         issuePass(d, p, 'AUTO');
@@ -389,8 +329,8 @@ export function runAutomation(d, now = Date.now()) {
     });
   }
 
-  // 6. Grievance SLA escalation
-  if (s.autoEscalation) {
+    // 6. Grievance SLA escalation
+  if (s.autoEscalation && !SERVER_MANAGES_APPLICATIONS) {
     d.grievances.forEach((g) => {
       if (g.status === 'In Progress' && now - g.createdAtMs >= g.slaHours * HOUR) {
         g.status = 'Escalated';
@@ -492,7 +432,9 @@ export const actions = {
       d.notifications.forEach((n) => {
         if (n.to === audience) n.read = true;
       });
+          
     });
+        api('/notifications/read', { method: 'PATCH' }).catch(console.error);
   },
 
   /* ---- admin: committees ---- */
@@ -509,6 +451,48 @@ export const actions = {
       else d.committees.push(clean);
       log(d, 'ADMIN', 'committee', `${i >= 0 ? 'Updated' : 'Created'} committee ${c.name}`);
     });
+  },
+    setCommittees(list) {
+    mutate((d) => { d.committees = list; });
+  },
+    setApplicationsFromServer(applications, students) {
+    mutate((d) => {
+      d.applications = applications;
+      d.students = students;
+    });
+  },
+    setSlots(slots) {
+    mutate((d) => { d.slots = slots; });
+  },
+    setSettings(settings) {
+    mutate((d) => { d.settings = { ...d.settings, ...settings }; });
+  },
+  setEventData(events, payments, registrations) {
+    mutate((d) => {
+      d.events = events;
+      d.payments = payments;
+      d.passes = registrations.map((r) => {
+        const ev = events.find((e) => e.id === r.eventId);
+        return {
+          id: r.id,
+          eventId: r.eventId,
+          eventTitle: ev?.title || 'Event',
+          passId: r.registrationCode,
+          userName: r.name,
+          rollNo: r.rollNo,
+          price: ev ? `₹${ev.price}${ev.priceUnit || ''}` : '',
+        };
+      });
+    });
+  },
+    setGrievances(list) {
+    mutate((d) => { d.grievances = list; });
+  },
+    setCandidates(list) {
+    mutate((d) => { d.candidates = list; });
+  },
+    setNotifications(list) {
+    mutate((d) => { d.notifications = list; });
   },
   deleteCommittee(id) {
     mutate((d) => {
@@ -698,11 +682,12 @@ export const actions = {
       log(d, 'ADMIN', 'slot', `Generated ${n} interview slots for next ${days} day(s)`);
     });
   },
-  updateSettings(patch) {
+   updateSettings(patch) {
     mutate((d) => {
       d.settings = { ...d.settings, ...patch };
       log(d, 'ADMIN', 'settings', `Automation settings changed: ${Object.keys(patch).join(', ')}`);
     });
+    api('/settings', { method: 'PUT', body: patch }).catch(console.error);
   },
   /** Bulk helpers for when an auto-rule is switched off */
   screenPending() {
@@ -731,20 +716,33 @@ export const actions = {
       log(d, 'ADMIN', 'settings', 'Manual automation run');
     });
   },
-  resetDemoData() {
-    db = seed();
-    runAutomation(db);
-    persist();
-    emit();
-  },
+  
+resetDemoData() {
+  db = createEmptyState();
+  persist();
+  emit();
+},
+
 };
 
 /* ------------------------------ selectors ------------------------------ */
 export const select = {
-  student: (d, roll) => {
-    const s = findStudent(d, roll) || d.students[0];
-    return { name: s.name, rollNo: s.rollNo, cgpa: s.cgpa, branch: s.branch, semester: s.semester };
-  },
+  
+student: (d, roll) => {
+  const students = d?.students || [];
+  const s = students.find((student) => student.rollNo === roll);
+
+  if (!s) return null;
+
+  return {
+    name: s.name || '',
+    rollNo: s.rollNo || '',
+    cgpa: s.cgpa ?? null,
+    branch: s.branch || '',
+    semester: s.semester || '',
+  };
+},
+
 
   /** committees a student can currently apply to (shape unchanged from original UI) */
   openCommittees: (d) =>
@@ -771,11 +769,13 @@ export const select = {
         };
       }),
 
-  freeSlotsFor: (d, appId) =>
-    d.slots.filter((s) => {
-      const taken = d.applications.filter((a) => a.slotId === s.id && a.status !== 'Rejected' && a.id !== appId).length;
-      return taken < s.capacity;
-    }),
+   freeSlotsFor: (d, appId) => {
+    const mine = d.applications.find((a) => a.id === appId);
+    return d.slots.filter((s) => {
+      const mineHere = mine && mine.slotId === s.id && mine.status !== 'Rejected' ? 1 : 0;
+      return (s.taken ?? 0) - mineHere < s.capacity;
+    });
+  },
 
   super50: (d, roll) => {
     const { weightAssessment: wa, weightInterview: wi, cohortSize } = d.settings;
@@ -807,8 +807,12 @@ export const select = {
       .map((c, i) => ({ ...c, rank: i + 1, confirmed: i + 1 <= cohortSize }));
   },
 
-  events: (d) =>
-    d.events.map((e) => ({ ...e, numericPrice: e.price, price: `₹${e.price}${e.priceUnit || ''}` })),
+   events: (d) =>
+    d.events.map((e) => ({
+      ...e,
+      numericPrice: e.price,
+      price: e.price === 0 ? 'FREE' : `₹${e.price}${e.priceUnit || ''}`,
+    })),
 
   passesFor: (d, roll) => d.passes.filter((p) => p.rollNo === roll),
 

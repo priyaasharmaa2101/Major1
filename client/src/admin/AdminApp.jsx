@@ -4,7 +4,8 @@ import {
   Sun, Moon, Bell, LogOut, Sparkles, Menu, X, ArrowRight, CheckCheck,
   ShieldCheck, Check, Pencil, ArrowLeft, UserPlus, Calendar, GraduationCap
 } from 'lucide-react';
-
+import { loadCommittees } from '../shared/committeeService';
+// inside the component:
 import AdminLogin, { ADMIN_EMAIL } from './AdminLogin';
 import { ThemeCtx, Modal, Field, Input, Select, Textarea, Btn, Badge } from './ui';
 import DashboardTab from './components/DashboardTab';
@@ -14,9 +15,15 @@ import EventsAdminTab from './components/EventsAdminTab';
 import GrievancesAdminTab from './components/GrievancesAdminTab';
 import Super50AdminTab from './components/Super50AdminTab';
 import AutomationTab from './components/AutomationTab';
-
+import AIAssistantTab from './components/AIAssistantTab';
+import { loadApplications } from '../shared/applicationService';
 import { useDB, actions, getDB, fmtDate, fmtDateTime } from '../shared/store';
 import { useAutomationLoop } from '../shared/hooks';
+import { loadSlots } from '../shared/slotService';
+import { loadEventData, loadSettings } from '../shared/eventService';
+import { loadGrievances } from '../shared/grievanceService';
+import { loadCandidates } from '../shared/candidateService';
+import { loadNotifications } from '../shared/notificationService';
 
 const SESSION_KEY = 'campussync:admin-session';
 const BRANCH_OPTIONS = ['All Branches', 'Hostel Residents Only', 'Computer Science', 'Electronics', 'Information Technology', 'Mechanical'];
@@ -46,7 +53,25 @@ export default function AdminApp({ externalAuthUser, onExternalLogout }) {
   );
 }
 
+
+
 function AdminShell({ externalAuthUser, onLogout }) {
+   useEffect(() => {
+    const load = () => {
+      loadCommittees().catch(console.error);
+      loadApplications().catch(console.error);
+      loadSlots().catch(console.error);
+            loadEventData().catch(console.error);
+      loadSettings().catch(console.error);
+            loadEventData().catch(console.error);
+                  loadGrievances().catch(console.error);
+            loadCandidates().catch(console.error);
+            loadNotifications().catch(console.error);
+    };
+    load();
+    const id = setInterval(load, 15000);
+    return () => clearInterval(id);
+  }, []);
   const db = useDB();
   const now = useAutomationLoop();
   const [tab, setTab] = useState('dashboard');
@@ -284,6 +309,8 @@ function AdminShell({ externalAuthUser, onLogout }) {
     { id: 'grievances', label: 'Grievances', icon: AlertCircle, badge: myOpenGrievancesCount },
     { id: 'super50', label: 'Super 50', icon: Award },
     { id: 'automation', label: 'Automation', icon: Bot },
+    
+{ id: 'ai', label: 'AI Assistant', icon: Sparkles },
   ];
 
   const page = {
@@ -294,6 +321,7 @@ function AdminShell({ externalAuthUser, onLogout }) {
     grievances: <GrievancesAdminTab now={now} toast={toast} adminProfile={adminProfile} />,
     super50: <Super50AdminTab toast={toast} />,
     automation: <AutomationTab toast={toast} />,
+    ai: <AIAssistantTab toast={toast} />,
   }[tab];
 
   const d = isDark;

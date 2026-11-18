@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Zap, Trash2, Plus, RotateCcw, Play } from 'lucide-react';
 import { useDB, actions, fmtDateTime } from '../../shared/store';
+import { addSlotRemote, deleteSlotRemote, generateSlotsRemote } from '../../shared/slotService';
 import { Card, Btn, PageHeader, Toggle, Field, Input, Badge, byBadge, useT } from '../ui';
 
 const RULES = [
@@ -52,7 +53,9 @@ export default function AutomationTab({ toast }) {
         <div className={`px-5 py-3 border-b flex items-center justify-between gap-3 flex-wrap ${t.border}`}>
           <span className={`text-sm font-bold ${t.strong}`}>Interview slots ({db.slots.length})</span>
           <div className="flex gap-2">
-            <Btn size="sm" onClick={() => { actions.generateSlots(3); toast('Generated slots for the next 3 days'); }}><Zap className="w-3 h-3" /> Generate next 3 days</Btn>
+            <Btn size="sm" onClick={() => generateSlotsRemote(3).then(() => toast('Generated slots for the next 3 days')).catch((e) => toast(e.message))}
+              
+              ><Zap className="w-3 h-3" /> Generate next 3 days</Btn>
           </div>
         </div>
         <div className={`divide-y ${t.divide}`}>
@@ -61,13 +64,16 @@ export default function AutomationTab({ toast }) {
               <span className={t.text}>{x.label}</span>
               <div className="flex items-center gap-3">
                 <Badge tone={usage(x.id) >= x.capacity ? 'bad' : 'good'}>{usage(x.id)}/{x.capacity} booked</Badge>
-                <Btn size="sm" variant="danger" onClick={() => actions.deleteSlot(x.id)}><Trash2 className="w-3 h-3" /></Btn>
+                <Btn size="sm" variant="danger" onClick={() => deleteSlotRemote(x.id).catch((e) => toast(e.message))}
+                  
+                  ><Trash2 className="w-3 h-3" /></Btn>
               </div>
             </div>
           ))}
         </div>
         <form
-          onSubmit={(e) => { e.preventDefault(); if (slot.trim()) { actions.addSlot(slot.trim()); setSlot(''); } }}
+        onSubmit={(e) => { e.preventDefault(); if (slot.trim()) { addSlotRemote(slot.trim()).then(() => setSlot('')).catch((err) => toast(err.message)); } }}
+        
           className={`p-4 border-t flex gap-2 ${t.border}`}
         >
           <Input placeholder="Custom slot e.g. Mon, Oct 27 • 5:00 PM - 5:20 PM" value={slot} onChange={(e) => setSlot(e.target.value)} />

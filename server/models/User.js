@@ -4,6 +4,11 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true, select: false },
   rollNo: { type: String, trim: true, default: '' },
+    rollNo: { type: String, trim: true, default: '' },
+  cgpa: { type: Number, min: 0, max: 10, default: null },
+  branch: { type: String, trim: true, default: '' },
+  hostel: { type: Boolean, default: false },
+  semester: { type: String, trim: true, default: '' },
   role: { type: String, enum: ['student'], default: 'student' }
 }, { timestamps: true });
 export default mongoose.models.User || mongoose.model('User', userSchema);

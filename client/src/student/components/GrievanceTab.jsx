@@ -25,7 +25,7 @@ export default function GrievanceTab({
         </div>
         <button 
           onClick={() => {
-            setSelectedCommitteeForGrievance('Hostel & Mess Committee');
+            setSelectedCommitteeForGrievance('');
             setIsGrievanceModalOpen(true);
           }}
           className="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-2 self-start"

@@ -1,0 +1,804 @@
+{
+    "committees": [
+        {
+            "id": "f63fb16d-1100-4c47-8d05-280ade32da2d",
+            "module": "committees",
+            "status": "approved",
+            "content": {
+                "name": "Technical Committee",
+                "category": "Technical",
+                "description": "Responsible for technical events, coding competitions, workshops and hackathons.",
+                "objectives": [
+                    "Manage college technical events",
+                    "Organize coding competitions",
+                    "Conduct technical workshops",
+                    "Promote innovation"
+                ],
+                "roles": [
+                    {
+                        "name": "Event Coordinator",
+                        "responsibilities": [
+                            "Plan technical events",
+                            "Coordinate event logistics"
+                        ],
+                        "required_skills": [
+                            "Event management",
+                            "Communication"
+                        ],
+                        "capacity": 2
+                    }
+                ],
+                "suggested_activities": [
+                    "Coding competitions",
+                    "Technical workshops",
+                    "Hackathons"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application",
+                        "description": "Students submit applications."
+                    },
+                    {
+                        "name": "Interview",
+                        "description": "Applicants attend an interview."
+                    }
+                ]
+            },
+            "created_at": "2026-10-31T16:32:03.902398+00:00",
+            "updated_at": "2026-10-31T16:52:23.462329+00:00",
+            "approved_at": "2026-10-31T16:52:23.462329+00:00"
+        },
+        {
+            "id": "f95d00c3-1411-4cfb-8e66-f92d7c99fc70",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "Technical Committee",
+                "category": "Technical",
+                "description": "Draft profile for the Technical Committee, intended to manage technical events, coding competitions and workshops in college as specified by the administrator (formal approval pending).",
+                "objectives": [
+                    "Manage college technical events.",
+                    "Organize coding competitions.",
+                    "Conduct and manage technical workshops."
+                ],
+                "roles": [
+                    {
+                        "name": "Event Coordinator",
+                        "responsibilities": [
+                            "Assist in managing technical events and coding competitions."
+                        ],
+                        "required_skills": [
+                            "Technical event coordination skills (further details not provided by administrator)."
+                        ],
+                        "capacity": 1
+                    },
+                    {
+                        "name": "Workshop Coordinator",
+                        "responsibilities": [
+                            "Assist in planning and managing college workshops."
+                        ],
+                        "required_skills": [
+                            "Workshop management skills (further details not provided by administrator)."
+                        ],
+                        "capacity": 1
+                    }
+                ],
+                "suggested_activities": [
+                    "Organizing technical events",
+                    "Hosting coding competitions",
+                    "Conducting technical workshops"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application Submission",
+                        "description": "Proposed initial stage for gathering student interest; college recruitment policy not provided."
+                    },
+                    {
+                        "name": "Candidate Assessment",
+                        "description": "Proposed evaluation stage based on technical event and workshop support needs; exact criteria pending administrator specification."
+                    }
+                ]
+            },
+            "created_at": "2026-10-31T16:32:06.981817+00:00",
+            "updated_at": "2026-10-31T16:32:06.981817+00:00"
+        },
+        {
+            "id": "6a021917-1f6d-428f-a751-53f5027e036f",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "Technical Committee",
+                "category": "Technical",
+                "description": "Draft proposal for the Technical Committee dedicated to managing technical events, coding competitions, and workshops in college. Approval from the college administration is pending.",
+                "objectives": [
+                    "Manage college technical events.",
+                    "Organize coding competitions.",
+                    "Conduct technical workshops."
+                ],
+                "roles": [
+                    {
+                        "name": "Technical Event Coordinator (Proposed)",
+                        "responsibilities": [
+                            "Plan and manage technical events and workshops."
+                        ],
+                        "required_skills": [
+                            "Specific required skills not provided by administrator."
+                        ],
+                        "capacity": 1
+                    },
+                    {
+                        "name": "Coding Competition Coordinator (Proposed)",
+                        "responsibilities": [
+                            "Organize and oversee coding competitions."
+                        ],
+                        "required_skills": [
+                            "Specific required skills not provided by administrator."
+                        ],
+                        "capacity": 1
+                    }
+                ],
+                "suggested_activities": [
+                    "Technical events management",
+                    "Coding competitions",
+                    "Hands-on technical workshops"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Draft Application Review",
+                        "description": "Proposed initial screening of interested applicants; specific guidelines not provided by administrator."
+                    },
+                    {
+                        "name": "Draft Candidate Discussion",
+                        "description": "Proposed discussion or interview stage; specific evaluation criteria not provided by administrator."
+                    }
+                ]
+            },
+            "created_at": "2026-10-31T16:32:34.926506+00:00",
+            "updated_at": "2026-10-31T16:32:34.926506+00:00"
+        },
+        {
+            "id": "e13617d5-e511-4b60-8352-8b05fb22f786",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "Technical Committee",
+                "category": "Technical",
+                "description": "Draft profile for the Technical Committee, proposed to manage technical events, coding competitions, and workshops in the college. Approval status is currently pending administrative review.",
+                "objectives": [
+                    "Manage technical events across the college",
+                    "Coordinate and host coding competitions",
+                    "Conduct technical workshops for students"
+                ],
+                "roles": [
+                    {
+                        "name": "Technical Event Lead",
+                        "responsibilities": [
+                            "Plan and manage college technical events and workshops"
+                        ],
+                        "required_skills": [
+                            "Technical event planning",
+                            "Coordination"
+                        ],
+                        "capacity": 2
+                    },
+                    {
+                        "name": "Competition Coordinator",
+                        "responsibilities": [
+                            "Organize and manage coding competitions"
+                        ],
+                        "required_skills": [
+                            "Coding event management",
+                            "Technical coordination"
+                        ],
+                        "capacity": 2
+                    }
+                ],
+                "suggested_activities": [
+                    "Organizing coding competitions",
+                    "Hosting technical workshops",
+                    "Coordinating technical college events"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application Submission",
+                        "description": "Proposed initial stage for gathering student interest; specific institutional deadlines and criteria are not specified."
+                    },
+                    {
+                        "name": "Candidate Review",
+                        "description": "Proposed stage to review relevant technical skills; final selection procedures are subject to administrative guidelines."
+                    }
+                ]
+            },
+            "created_at": "2026-10-31T16:35:22.965977+00:00",
+            "updated_at": "2026-10-31T16:35:22.965977+00:00"
+        },
+        {
+            "id": "83ea923d-4c3b-4594-b42c-5ed817460ebc",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "Technical Committee",
+                "category": "Technical",
+                "description": "Manage technical events, coding competitions and workshops in college.",
+                "objectives": [
+                    "Manage technical events in college",
+                    "Organize coding competitions",
+                    "Conduct workshops"
+                ],
+                "roles": [
+                    {
+                        "name": "Event Coordinator",
+                        "responsibilities": [
+                            "Manage technical events and workshops",
+                            "Coordinate with participants and speakers"
+                        ],
+                        "required_skills": [
+                            "Event Management",
+                            "Communication"
+                        ],
+                        "capacity": 5
+                    }
+                ],
+                "suggested_activities": [
+                    "Coding competitions",
+                    "Technical workshops",
+                    "Technical events"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application Review",
+                        "description": "Reviewing submitted applications for committee roles."
+                    },
+                    {
+                        "name": "Interview",
+                        "description": "Conducting interviews for shortlisted candidates."
+                    }
+                ]
+            },
+            "created_at": "2026-10-31T17:20:56.563923+00:00",
+            "updated_at": "2026-10-31T17:20:56.563923+00:00"
+        },
+        {
+            "id": "66085089-86e1-4cc7-be43-771e14b5639d",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "sac",
+                "category": "Other",
+                "description": "sac. Additional specific description is missing.",
+                "objectives": [
+                    "Information missing"
+                ],
+                "roles": [
+                    {
+                        "name": "Member",
+                        "responsibilities": [
+                            "Information missing"
+                        ],
+                        "required_skills": [
+                            "Information missing"
+                        ],
+                        "capacity": 1
+                    }
+                ],
+                "suggested_activities": [
+                    "Information missing"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application Review",
+                        "description": "Information missing"
+                    }
+                ]
+            },
+            "created_at": "2026-11-16T12:16:52.097231+00:00",
+            "updated_at": "2026-11-16T12:16:52.098226+00:00"
+        },
+        {
+            "id": "d66b5fcf-1b0a-4040-a8cb-e635a1f61217",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "gdg",
+                "category": "Other",
+                "description": "gdg is a google developer club . its basically introduce students to learning , communication, mutitasking",
+                "objectives": [
+                    "Introduce students to learning",
+                    "Promote communication among students",
+                    "Develop multitasking skills"
+                ],
+                "roles": [
+                    {
+                        "name": "Member",
+                        "responsibilities": [
+                            "Participate in club activities",
+                            "Engage in learning and communication"
+                        ],
+                        "required_skills": [
+                            "Willingness to learn",
+                            "Communication skills",
+                            "Multitasking"
+                        ],
+                        "capacity": 10
+                    }
+                ],
+                "suggested_activities": [
+                    "Learning sessions",
+                    "Communication workshops",
+                    "Multitasking drills"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application",
+                        "description": "Submit application to join gdg"
+                    }
+                ]
+            },
+            "created_at": "2026-11-16T12:19:40.253605+00:00",
+            "updated_at": "2026-11-16T12:19:40.253605+00:00"
+        },
+        {
+            "id": "6ee7f52b-f739-40e6-ac10-6180cec12939",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "cse dimensions",
+                "category": "Other",
+                "description": "A committee specifically for cse student.",
+                "objectives": [
+                    "Serve cse student",
+                    "Provide activities and support as outlined by the committee purpose"
+                ],
+                "roles": [
+                    {
+                        "name": "Committee Member",
+                        "responsibilities": [
+                            "Participate in committee activities",
+                            "Support cse student initiatives"
+                        ],
+                        "required_skills": [
+                            "Basic communication",
+                            "Teamwork"
+                        ],
+                        "capacity": 10
+                    }
+                ],
+                "suggested_activities": [
+                    "Meetings and events for cse student"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application",
+                        "description": "Submit an expression of interest to join cse dimensions."
+                    },
+                    {
+                        "name": "Review",
+                        "description": "Review of the application by committee organizers."
+                    }
+                ]
+            },
+            "created_at": "2026-11-16T12:29:42.835769+00:00",
+            "updated_at": "2026-11-16T12:29:42.835769+00:00"
+        },
+        {
+            "id": "746ab301-7097-4008-a3e7-d63bed11aa36",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "dimensions",
+                "category": "Other",
+                "description": "culture commiti",
+                "objectives": [
+                    "Information missing regarding specific committee objectives."
+                ],
+                "roles": [
+                    {
+                        "name": "Committee Member",
+                        "responsibilities": [
+                            "Participate in culture commiti activities."
+                        ],
+                        "required_skills": [
+                            "Information missing regarding required skills."
+                        ],
+                        "capacity": 10
+                    }
+                ],
+                "suggested_activities": [
+                    "Information missing regarding suggested activities."
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application",
+                        "description": "Initial stage for collecting committee interest."
+                    }
+                ]
+            },
+            "created_at": "2026-11-17T10:12:21.283686+00:00",
+            "updated_at": "2026-11-17T10:12:21.283686+00:00"
+        },
+        {
+            "id": "9f95475f-227b-43ee-8a51-ca80e4c42b3b",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "dimensions",
+                "category": "Other",
+                "description": "culture commiti",
+                "objectives": [
+                    "Not provided by the administrator"
+                ],
+                "roles": [
+                    {
+                        "name": "Member",
+                        "responsibilities": [
+                            "Not provided by the administrator"
+                        ],
+                        "required_skills": [
+                            "Not provided by the administrator"
+                        ],
+                        "capacity": 1
+                    }
+                ],
+                "suggested_activities": [
+                    "Not provided by the administrator"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application",
+                        "description": "Initial draft stage pending administrator input."
+                    }
+                ]
+            },
+            "created_at": "2026-11-17T10:12:35.722974+00:00",
+            "updated_at": "2026-11-17T10:12:35.722974+00:00"
+        },
+        {
+            "id": "9e84324d-45d7-49e3-b1e8-d0c1a52e8d20",
+            "module": "committees",
+            "status": "draft",
+            "content": {
+                "name": "farewell",
+                "category": "Other",
+                "description": "for final year student a token of memory from college",
+                "objectives": [
+                    "Organize a token of memory for final year students from the college"
+                ],
+                "roles": [
+                    {
+                        "name": "Committee Member",
+                        "responsibilities": [
+                            "Assist in planning and organizing the farewell event",
+                            "Coordinate tokens of memory for final year students"
+                        ],
+                        "required_skills": [
+                            "Event planning",
+                            "Coordination"
+                        ],
+                        "capacity": 5
+                    }
+                ],
+                "suggested_activities": [
+                    "Farewell ceremony",
+                    "Distribution of tokens of memory"
+                ],
+                "recruitment_stages": [
+                    {
+                        "name": "Application",
+                        "description": "Submit an expression of interest to join the farewell committee."
+                    }
+                ]
+            },
+            "created_at": "2026-11-17T13:45:34.954841+00:00",
+            "updated_at": "2026-11-17T13:45:34.954841+00:00"
+        }
+    ],
+    "recruitment": [
+        {
+            "id": "438fb67d-d47d-4dee-8c1c-ae4899a990b0",
+            "module": "recruitment",
+            "status": "draft",
+            "content": {
+                "candidate_summary": "Aarav Sharma is applying for the Technical Lead role in the Technical Committee. He has programming experience in Python, JavaScript, and React, has completed two college projects, participated in a coding competition, and expressed interest in organizing coding workshops to mentor juniors.",
+                "eligibility_status": "needs_review",
+                "eligibility_reasons": [
+                    "Meets basic knowledge of programming criterion through experience with Python, JavaScript, and React.",
+                    "Meets the criterion of at least one completed technical project by having built two college projects.",
+                    "Demonstrates interest in organizing technical events by stating a goal to organize coding workshops.",
+                    "Teamwork and communication skills are not explicitly detailed in the provided answers and require verification."
+                ],
+                "missing_information": [
+                    "Specific details regarding teamwork and communication skills.",
+                    "Descriptions, documentation, or links for the two completed college projects.",
+                    "Details regarding the coding competition participated in."
+                ],
+                "strengths": [
+                    "Familiarity with multiple programming languages and frameworks (Python, JavaScript, React).",
+                    "Hands-on development experience with two completed college projects.",
+                    "Prior participation in a coding competition.",
+                    "Proactive interest in mentoring peers and organizing workshops."
+                ],
+                "clarification_areas": [
+                    "Evidence of teamwork and collaborative experience.",
+                    "Level of communication skills necessary for leading workshops and team members.",
+                    "Specific role and contributions made during the two college projects."
+                ],
+                "interview_questions": [
+                    "Can you describe a situation where you worked in a team on a technical project and how you communicated with team members?",
+                    "What were the objectives, technologies used, and your individual contributions in the two college projects you built?",
+                    "How would you plan and structure a coding workshop for junior students?",
+                    "Can you share an experience from the coding competition you participated in and what you learned from it?"
+                ],
+                "assessment_rubric": [
+                    "Technical Competence: Proficiency in Python, JavaScript, React, and project development.",
+                    "Event Organization & Mentorship: Feasibility and clarity of ideas for hosting coding workshops.",
+                    "Communication & Leadership: Ability to articulate ideas clearly and guide team members or juniors.",
+                    "Teamwork & Collaboration: Demonstrated capability to work effectively within a committee."
+                ],
+                "final_decision": "pending"
+            },
+            "created_at": "2026-10-31T16:58:01.261526+00:00",
+            "updated_at": "2026-10-31T16:58:01.261526+00:00"
+        },
+        {
+            "id": "08d3ae7b-8afe-4074-8ac2-5357b014f59d",
+            "module": "recruitment",
+            "status": "draft",
+            "content": {
+                "candidate_summary": "The candidate is a 7th-semester student in Computer Science with a CGPA of 6.6, applying for the SAC committee (role 40).",
+                "eligibility_status": "eligible",
+                "eligibility_reasons": [
+                    "The candidate's CGPA of 6.6 meets the minimum required CGPA of 6.",
+                    "The required branch is All Branches, and the candidate is from Computer Science."
+                ],
+                "missing_information": [
+                    "Interview score out of 10"
+                ],
+                "strengths": [
+                    "Meets the minimum CGPA requirement",
+                    "Belongs to an eligible branch"
+                ],
+                "clarification_areas": [
+                    "Previous committee experience or extracurricular involvement"
+                ],
+                "interview_questions": [
+                    "What experience do you have that qualifies you for this SAC role?",
+                    "How do you plan to manage your 7th-semester academic workload along with committee responsibilities?"
+                ],
+                "assessment_rubric": [
+                    "Evaluate communication skills",
+                    "Assess past experience and relevance to SAC responsibilities",
+                    "Determine availability and commitment level"
+                ],
+                "final_decision": "pending"
+            },
+            "created_at": "2026-11-17T09:30:55.259675+00:00",
+            "updated_at": "2026-11-17T09:30:55.259675+00:00"
+        }
+    ],
+    "grievances": [
+        {
+            "id": "6c1392c5-336e-4bf6-a345-ec7646cd0a57",
+            "module": "grievances",
+            "status": "draft",
+            "content": {
+                "summary": "A student submitted a grievance regarding the college library closing too early, which creates access issues for those with evening classes, and requested extended hours.",
+                "suggested_category": "Facilities and Resources",
+                "suggested_urgency": "low",
+                "clarification_questions": [
+                    "What specific extended hours are being requested?",
+                    "How many students with evening classes are affected by the current closing time?"
+                ],
+                "recommended_actions": [
+                    "Review current library operating hours and staffing capacity.",
+                    "Consult with library administration regarding the feasibility of extending hours."
+                ],
+                "acknowledgement_response": "Thank you for sharing your feedback regarding the library operating hours. We have received your suggestion and are reviewing it.",
+                "privacy_considerations": [
+                    "Ensure the identity of the student submitting the grievance is kept confidential."
+                ],
+                "safety_concerns": [],
+                "requires_human_review": false
+            },
+            "created_at": "2026-10-31T17:21:17.079432+00:00",
+            "updated_at": "2026-10-31T17:21:17.079432+00:00"
+        },
+        {
+            "id": "c7c15e9f-d408-422b-9b4d-0ea3c76f4f1f",
+            "module": "grievances",
+            "status": "draft",
+            "content": {
+                "summary": "A grievance titled 'bad recuirtment' regarding the 'cse dimensions' committee with the description 'worst committie'. The current status is In Progress.",
+                "suggested_category": "Recruitment Process",
+                "suggested_urgency": "medium",
+                "clarification_questions": [
+                    "What specific aspects of the recruitment process were unsatisfactory?",
+                    "Were there any communication issues during the recruitment?"
+                ],
+                "recommended_actions": [
+                    "Review the recruitment guidelines for the cse dimensions committee.",
+                    "Contact the student to gather specific details regarding their feedback."
+                ],
+                "acknowledgement_response": "Thank you for sharing your feedback regarding the recruitment process for the cse dimensions committee. We have received your grievance and it is currently under review.",
+                "privacy_considerations": [
+                    "Ensure student details and specific feedback are kept confidential."
+                ],
+                "safety_concerns": [],
+                "requires_human_review": true
+            },
+            "created_at": "2026-11-17T08:41:09.350979+00:00",
+            "updated_at": "2026-11-17T08:41:09.350979+00:00"
+        }
+    ],
+    "events": [
+        {
+            "id": "19a49af3-abdc-4802-beaa-9f0cb88b3eca",
+            "module": "events",
+            "status": "draft",
+            "content": {
+                "event_name": "Annual Coding Hackathon",
+                "description": "A one-day college coding hackathon where students work in teams to build innovative software solutions.",
+                "objectives": [
+                    "Promote innovation",
+                    "Encourage teamwork",
+                    "Improve practical coding skills"
+                ],
+                "agenda": [
+                    "Opening ceremony and problem statement release (Administrator confirmation needed for timing)",
+                    "Hacking session (Administrator confirmation needed for timing)",
+                    "Project submission and evaluation (Administrator confirmation needed for timing)",
+                    "Closing ceremony and winners announcement (Administrator confirmation needed for timing)"
+                ],
+                "preparation_timeline": [
+                    "Initial planning and administrator confirmation of dates and venue",
+                    "Release promotional content and open registrations",
+                    "Finalize participant list and resources"
+                ],
+                "tasks": [
+                    {
+                        "task": "Confirm venue, dates, and budget with administrators",
+                        "suggested_deadline": "Pending administrator confirmation",
+                        "responsible_role": "Event Coordinator"
+                    },
+                    {
+                        "task": "Draft and launch promotional content",
+                        "suggested_deadline": "Pending administrator confirmation",
+                        "responsible_role": "Publicity Lead"
+                    }
+                ],
+                "resource_requirements": [
+                    "Computers and reliable internet access (Administrator confirmation needed for availability)",
+                    "Venue for the hackathon (Administrator confirmation needed)"
+                ],
+                "potential_risks": [
+                    "Technical failures or internet outage during the hackathon",
+                    "Low registration turnout"
+                ],
+                "backup_plans": [
+                    "Have offline coding tools and IT support ready",
+                    "Extend promotional outreach if necessary"
+                ],
+                "promotional_content": "Join us for the Annual Coding Hackathon! Showcase your coding skills, collaborate with peers, and build innovative software solutions. Register now!",
+                "registration_fields": [
+                    "Full Name",
+                    "Student ID",
+                    "Email Address",
+                    "Team Name"
+                ],
+                "post_event_tasks": [
+                    "Collect participant feedback",
+                    "Distribute certificates",
+                    "Publish event summary"
+                ]
+            },
+            "created_at": "2026-10-31T17:23:43.135207+00:00",
+            "updated_at": "2026-10-31T17:23:43.135207+00:00"
+        },
+        {
+            "id": "a2587753-4b64-487c-9b10-f0c3d73e99ca",
+            "module": "events",
+            "status": "draft",
+            "content": {
+                "event_name": "technical event",
+                "description": "It is a seminar event. Details regarding the exact date and venue require administrator confirmation.",
+                "objectives": [
+                    "Conduct the seminar event as requested by the administrator.",
+                    "Accommodate up to the expected seats capacity of 100 participants, pending administrator confirmation of venue and layout."
+                ],
+                "agenda": [
+                    "Welcome and opening remarks (Requires administrator confirmation)",
+                    "Main seminar session (Requires administrator confirmation)",
+                    "Q and A session (Requires administrator confirmation)",
+                    "Closing remarks and vote of thanks (Requires administrator confirmation)"
+                ],
+                "preparation_timeline": [
+                    "Initial planning and approval phase (Dates require administrator confirmation)",
+                    "Promotional campaign launch (Dates require administrator confirmation)",
+                    "Registration monitoring and capacity check for 100 expected seats (Dates require administrator confirmation)"
+                ],
+                "tasks": [
+                    {
+                        "task": "Confirm event date, venue, and budget with the administrator",
+                        "suggested_deadline": "Requires administrator confirmation",
+                        "responsible_role": "Event Coordinator"
+                    },
+                    {
+                        "task": "Prepare promotional content and launch registration",
+                        "suggested_deadline": "Requires administrator confirmation",
+                        "responsible_role": "Publicity Lead"
+                    },
+                    {
+                        "task": "Manage logistics and equipment for 100 expected seats",
+                        "suggested_deadline": "Requires administrator confirmation",
+                        "responsible_role": "Logistics Manager"
+                    }
+                ],
+                "resource_requirements": [
+                    "Venue to accommodate 100 expected seats (Requires administrator confirmation)",
+                    "Audio-visual equipment for seminar (Requires administrator confirmation)",
+                    "Registration desk materials (Requires administrator confirmation)"
+                ],
+                "potential_risks": [
+                    "Unconfirmed venue and date may cause scheduling conflicts",
+                    "Turnout exceeding or falling short of the 100 expected seats"
+                ],
+                "backup_plans": [
+                    "Maintain flexible planning pending final administrator confirmation of venue and date",
+                    "Monitor registration numbers closely to adjust seating arrangements if necessary"
+                ],
+                "promotional_content": "Join us for an upcoming technical seminar event! Expected capacity is 100 seats. Stay tuned for final date, time, and venue announcements pending administrator confirmation.",
+                "registration_fields": [
+                    "Full Name",
+                    "Student ID or Email",
+                    "Department",
+                    "Contact Number"
+                ],
+                "post_event_tasks": [
+                    "Collect feedback from attendees (Requires administrator confirmation)",
+                    "Review attendance against the expected seats capacity of 100",
+                    "Submit post-event summary report to the administrator"
+                ]
+            },
+            "created_at": "2026-11-17T07:39:26.797438+00:00",
+            "updated_at": "2026-11-17T07:39:26.797438+00:00"
+        }
+    ],
+    "admin_assistant": [
+        {
+            "id": "1148840f-225e-47ee-9349-003ab0c8cdd7",
+            "module": "admin_assistant",
+            "status": "draft",
+            "content": {
+                "request_summary": "The administrator is inquiring about which parts of the recruitment workflow could be automated further within CampusSync.",
+                "recommendations": [
+                    {
+                        "recommendation": "Automate applicant status updates based on review stages",
+                        "reason": "There are total applications currently being tracked across open hiring committees, and automating status notifications can reduce manual tracking.",
+                        "suggested_action": "Review current notification triggers for application progress and set up automated emails for stage transitions.",
+                        "priority": "medium"
+                    }
+                ],
+                "repetitive_tasks": [
+                    "Tracking open hiring committee applications manually",
+                    "Managing interview slot distribution"
+                ],
+                "automation_opportunities": [
+                    "Automated application acknowledgment upon submission",
+                    "Automated interview slot booking and reminders"
+                ],
+                "workflow_improvements": [
+                    "Streamline the transition of candidates from application review to interview scheduling"
+                ],
+                "missing_information": [
+                    "Specific details on the current manual steps in the recruitment workflow",
+                    "Integration capabilities currently enabled in CampusSync"
+                ],
+                "potential_risks": [
+                    "Over-automation of recruitment steps might reduce the personalized feel of committee interviews"
+                ],
+                "requires_admin_action": false
+            },
+            "created_at": "2026-11-17T09:24:35.138078+00:00",
+            "updated_at": "2026-11-17T09:24:35.138078+00:00"
+        }
+    ]
+}

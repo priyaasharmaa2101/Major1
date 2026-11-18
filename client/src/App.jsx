@@ -216,19 +216,19 @@ export default function App({ user, onLogout }) {
     setIsPaymentModalOpen(true);
   };
 
-  const processPayment = () => {
-    const newPass = {
-      id: `PASS-${Math.floor(1000 + Math.random() * 9000)}`,
-      eventTitle: selectedEventForBooking.title,
-      passId: `TKT-${Math.floor(100000 + Math.random() * 900000)}`,
-      userName: studentProfile.name,
-      rollNo: studentProfile.rollNo,
-      price: selectedEventForBooking.price
-    };
-    setMyPasses(prev => [newPass, ...prev]);
+   const processPayment = async () => {
     setIsPaymentModalOpen(false);
-    showToast(`Payment of ${selectedEventForBooking.price} Verified via UPI! Digital QR pass issued.`);
-    setActiveTab('events');
+    try {
+      const { payment } = await payRemote(selectedEventForBooking.id);
+      if (payment.status === 'Verified') {
+        showToast(`Payment of ${selectedEventForBooking.price} verified! Digital QR pass issued.`);
+      } else {
+        showToast('Payment received. Waiting for admin verification, your pass will appear here.');
+      }
+      setActiveTab('events');
+    } catch (e) {
+      showToast(e.message);
+    }
   };
 
   const submitGrievance = (e) => {
