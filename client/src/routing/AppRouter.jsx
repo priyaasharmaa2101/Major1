@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import LandingPage from '../landing/LandingPage.jsx';
 import AuthPage from '../auth/AuthPage.jsx';
 import StudentApp from '../student/StudentApp.jsx';
 import AdminApp from '../admin/AdminApp.jsx';
@@ -32,7 +33,9 @@ export default function AppRouter() {
 
   useEffect(() => {
     if (!authenticated) {
-      if (path !== '/signup') go('/login');
+      if (path !== '/' && path !== '/login' && path !== '/signup') {
+        go('/');
+      }
       return;
     }
     const target = user.role === 'admin' ? '/admin' : '/';
@@ -51,17 +54,21 @@ export default function AppRouter() {
     localStorage.removeItem('campusnexus_user');
     sessionStorage.removeItem('campussync:admin-session');
     setUser(null);
-    go('/login');
+    go('/');
   };
 
   if (!authenticated) {
-    return (
-      <AuthPage
-        key={path}
-        initialMode={path === '/signup' ? 'signup' : 'login'}
-        onAuthenticated={onAuthenticated}
-      />
-    );
+    if (path === '/login' || path === '/signup') {
+      return (
+        <AuthPage
+          key={path}
+          initialMode={path === '/signup' ? 'signup' : 'login'}
+          onAuthenticated={onAuthenticated}
+          onBackHome={() => go('/')}
+        />
+      );
+    }
+    return <LandingPage onNavigate={go} />;
   }
 
   if (user.role === 'admin') {
